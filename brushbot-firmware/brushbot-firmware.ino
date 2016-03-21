@@ -12,7 +12,7 @@
 #define MOTHERBOARD 1  // Adafruit Motor Shield 1
 
 // Increase this number to see more output
-#define VERBOSE         (1)
+#define VERBOSE         (0)
 
 // Comment out this line to disable findHome and limit switches
 //#define USE_LIMIT_SWITCH  (1)
@@ -72,8 +72,8 @@
 #define MAX_BUF         (64)
 
 // servo pin differs based on device
-#define SERVO_PIN       (10)
-#define SOLND_PIN       (9)
+#define SERVO_PIN       (9)
+//#define SOLND_PIN       (9)
 
 #define TIMEOUT_OK      (1000)  // 1/4 with no instruction?  Make sure PC knows we are waiting.
 
@@ -143,10 +143,10 @@ int robot_uid=0;
 // plotter limits
 // all distances are relative to the calibration point of the plotter.
 // (normally this is the center of the drawing area)
-static float limit_top = 243.94;  // distance to top of drawing area.
-static float limit_bottom = -173.50;  // Distance to bottom of drawing area.
-static float limit_right = 334.65;  // Distance to right of drawing area.
-static float limit_left = -334.65;  // Distance to left of drawing area.
+static float limit_top = 540;  // distance to top of drawing area.
+static float limit_bottom = -660;  // Distance to bottom of drawing area.
+static float limit_right = 620;  // Distance to right of drawing area.
+static float limit_left = -620;  // Distance to left of drawing area.
 
 // what are the motors called?
 char m1d='L';
@@ -159,10 +159,10 @@ int M2_REEL_IN  = FORWARD;
 int M2_REEL_OUT = BACKWARD;
 
 // calculate some numbers to help us find feed_rate
-float SPOOL_DIAMETER1 = 4.470;
+float SPOOL_DIAMETER1 = 20.0;
 float THREADPERSTEP1;  // thread per step
 
-float SPOOL_DIAMETER2 = 4.470;
+float SPOOL_DIAMETER2 = 20.0;
 float THREADPERSTEP2;  // thread per step
 
 // plotter position.
@@ -190,6 +190,9 @@ Vector3 tool_offset[NUM_TOOLS];
 int current_tool=0;
 
 long line_number;
+
+
+//Servo myservo;
 
 //------------------------------------------------------------------------------
 // METHODS
@@ -271,11 +274,11 @@ static void setPenAngle(int pen_angle) {
     
     if(posz<PEN_DOWN_ANGLE){
         posz=PEN_DOWN_ANGLE;
-        digitalWrite(SOLND_PIN, HIGH);
+//        digitalWrite(SOLND_PIN, HIGH);
     }
     if(posz>PEN_UP_ANGLE  ) {
       posz=PEN_UP_ANGLE;
-      digitalWrite(SOLND_PIN, LOW);
+//      digitalWrite(SOLND_PIN, LOW);
     }
 
     s1.write( (int)posz );
@@ -342,7 +345,7 @@ static void line(float x,float y,float z) {
   long over=0;
   long i;
   
-  setPenAngle((int)z);
+//  setPenAngle((int)z);
   
   // bresenham's line algorithm.
   if(ad1>ad2) {
@@ -800,16 +803,20 @@ static void processCommand() {
       
       //fire solenoid if G01
       if (cmd == 1){
-        digitalWrite(SOLND_PIN, HIGH); 
+//        digitalWrite(SOLND_PIN, HIGH); 
+          s1.write( PEN_DOWN_ANGLE );
       }
       else {
-        digitalWrite(SOLND_PIN, LOW);
+//        digitalWrite(SOLND_PIN, LOW);
+          s1.write( PEN_UP_ANGLE );
       }
       
       line_safe( parsenumber('X',(absolute_mode?offset.x:0)*10)*0.1 + (absolute_mode?0:offset.x),
                  parsenumber('Y',(absolute_mode?offset.y:0)*10)*0.1 + (absolute_mode?0:offset.y),
                  parsenumber('Z',(absolute_mode?offset.z:0)) + (absolute_mode?0:offset.z) );
-      digitalWrite(SOLND_PIN, LOW);
+//      digitalWrite(SOLND_PIN, LOW);
+
+          s1.write( PEN_UP_ANGLE );
     break;
     }
   case 2:
@@ -818,7 +825,7 @@ static void processCommand() {
       setFeedRate(parsenumber('F',feed_rate));
       
       //fire solenoid
-      digitalWrite(SOLND_PIN, HIGH);
+//      digitalWrite(SOLND_PIN, HIGH);
       
       arc(parsenumber('I',(absolute_mode?offset.x:0)*10)*0.1 + (absolute_mode?0:offset.x),
           parsenumber('J',(absolute_mode?offset.y:0)*10)*0.1 + (absolute_mode?0:offset.y),
@@ -828,7 +835,7 @@ static void processCommand() {
           (cmd==2) ? -1 : 1);
       
       //turn off solenoid
-      digitalWrite(SOLND_PIN, LOW);    
+//      digitalWrite(SOLND_PIN, LOW);    
       
       break;
     }
@@ -870,12 +877,12 @@ static void processCommand() {
       break;
     }
   case 93: {
-    digitalWrite(SOLND_PIN, HIGH);
-    break;
+//    digitalWrite(SOLND_PIN, HIGH);
+//    break;
   }
   case 94: {
-    digitalWrite(SOLND_PIN, LOW);
-    break;
+//    digitalWrite(SOLND_PIN, LOW);
+//    break;
   }
   }
 
@@ -970,8 +977,10 @@ void setup() {
   // servo should be on SER1, pin 10.
   s1.attach(SERVO_PIN);
   
+//  myservo.attach(9);
+  
   //setup Solenoid firing pin
-  pinMode(SOLND_PIN, OUTPUT);
+//  pinMode(SOLND_PIN, OUTPUT);
   
   // turn on the pull up resistor
   digitalWrite(L_PIN,HIGH);
