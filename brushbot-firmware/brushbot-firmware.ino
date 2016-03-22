@@ -21,9 +21,13 @@
 // which motor is on which pin?
 //#define M1_PIN          (1)
 //#define M2_PIN          (2)
+//#define M3_PIN          (3)
+//#define M4_PIN          (4)
 //FLIPPED OPTION
 #define M1_PIN          (2)
 #define M2_PIN          (1)
+#define M3_PIN          (4)
+#define M4_PIN          (3)
 
 // which limit switch is on which pin?
 //#define L_PIN           (A3)
@@ -85,14 +89,21 @@
 #if MOTHERBOARD == 1
 #define M1_STEP  m1.step
 #define M2_STEP  m2.step
+#define M3_STEP  m3.step
 #define M1_ONESTEP(x)  m1.onestep(x)
 #define M2_ONESTEP(x)  m2.onestep(x)
+#define M3_ONESTEP(x)  m3.onestep(x)
+#define M4_ONESTEP(x)  m4.onestep(x)
 #endif
 #if MOTHERBOARD == 2
 #define M1_STEP  m1->step
 #define M2_STEP  m2->step
+#define M3_STEP  m3->step
+#define M4_STEP  m4->step
 #define M1_ONESTEP(x)  m1->onestep(x,INTERLEAVE)
 #define M2_ONESTEP(x)  m2->onestep(x,INTERLEAVE)
+#define M3_ONESTEP(x)  m3->onestep(x,INTERLEAVE)
+#define M4_ONESTEP(x)  m4->onestep(x,INTERLEAVE)
 // stacked motor shields have different addresses. The default is 0x60
 #define SHIELD_ADDRESS (0x60)
 #endif
@@ -105,7 +116,8 @@
 #define ADDR_UUID        1             // address of the UUID (long - 4 bytes)
 #define ADDR_SPOOL_DIA1  5             // address of the spool diameter (float - 4 bytes)
 #define ADDR_SPOOL_DIA2  9             // address of the spool diameter (float - 4 bytes)
-
+#define ADDR_SPOOL_DIA3  13            // address of the spool diameter (float - 4 bytes)
+#define ADDR_SPOOL_DIA4  17            // address of the spool diameter (float - 4 bytes)
 
 //------------------------------------------------------------------------------
 // INCLUDES
@@ -131,8 +143,10 @@
 //------------------------------------------------------------------------------
 #if MOTHERBOARD == 1
 // Initialize Adafruit stepper controller
-static AF_Stepper m1((int)STEPS_PER_TURN, M2_PIN);
-static AF_Stepper m2((int)STEPS_PER_TURN, M1_PIN);
+static AF_Stepper m1((int)STEPS_PER_TURN, M1_PIN);
+static AF_Stepper m2((int)STEPS_PER_TURN, M2_PIN);
+static AF_Stepper m3((int)STEPS_PER_TURN, M3_PIN);
+static AF_Stepper m4((int)STEPS_PER_TURN, M4_PIN);
 #endif
 
 static Servo s1;
@@ -149,7 +163,7 @@ static float limit_right = 620;  // Distance to right of drawing area.
 static float limit_left = -620;  // Distance to left of drawing area.
 
 //gondola dimensions
-//all distances of string attachment relative to pen position
+//all distances (mm) of string attachment relative to pen position
 //(normally this is the centered in the gondola)
 static float gondola_top = 76; //distance to top string attachment on gondola
 static float gondola_bottom = -76; //distance to bottom string attachment on gondola
@@ -157,14 +171,21 @@ static float gondola_right = 76; //distance to right string attachment on gondol
 static float gondola_left = -76; //distance to left string attachment on gondola
 
 // what are the motors called?
-char m1d='L';
-char m2d='R';
+// motors are labelled clockwise from top left
+char m1d='A'; // top left
+char m2d='B'; // top right
+char m3d='C'; // bottom right
+char m4d='D'; // bottom left
 
 // which way are the spools wound, relative to motor movement?
 int M1_REEL_IN  = BACKWARD;
 int M1_REEL_OUT = FORWARD;
 int M2_REEL_IN  = FORWARD;
 int M2_REEL_OUT = BACKWARD;
+int M3_REEL_IN = FORWARD;
+int M3_REEL_OUT = BACKWARD;
+int M4_REEL_IN = FORWARD;
+int M4_REEL_OUT = BACKWARD;
 
 // calculate some numbers to help us find feed_rate
 float SPOOL_DIAMETER1 = 20.0;
@@ -216,7 +237,7 @@ long line_number;
 
 //------------------------------------------------------------------------------
 // calculate max velocity, threadperstep.
-static void adjustSpoolDiameter(float diameter1,float diameter2) {
+static void adjustSpoolDiameter(float diameter1,float diameter2,float diameter3,float diameter4) {
   SPOOL_DIAMETER1 = diameter1;
   float SPOOL_CIRC = SPOOL_DIAMETER1*PI;  // circumference
   THREADPERSTEP1 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
@@ -225,11 +246,23 @@ static void adjustSpoolDiameter(float diameter1,float diameter2) {
   SPOOL_CIRC = SPOOL_DIAMETER2*PI;  // circumference
   THREADPERSTEP2 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
 
+  SPOOL_DIAMETER3 = diameter3;
+  SPOOL_CIRC = SPOOL_DIAMETER3*PI;  // circumference
+  THREADPERSTEP3 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
+[
+  SPOOL_DIAMETER4 = diameter4;
+  SPOOL_CIRC = SPOOL_DIAMETER4*PI;  // circumference
+  THREADPERSTEP4 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step]
+
 #if VERBOSE > 2
   Serial.print(F("SpoolDiameter1 = "));  Serial.println(SPOOL_DIAMETER1,3);
   Serial.print(F("SpoolDiameter2 = "));  Serial.println(SPOOL_DIAMETER2,3);
+  Serial.print(F("SpoolDiameter3 = "));  Serial.println(SPOOL_DIAMETER3,3);
+  Serial.print(F("SpoolDiameter4 = "));  Serial.println(SPOOL_DIAMETER4,3);
   Serial.print(F("THREADPERSTEP1="));  Serial.println(THREADPERSTEP1,3);
   Serial.print(F("THREADPERSTEP2="));  Serial.println(THREADPERSTEP2,3);
+  Serial.print(F("THREADPERSTEP3="));  Serial.println(THREADPERSTEP3,3);
+  Serial.print(F("THREADPERSTEP4="));  Serial.println(THREADPERSTEP4,3);
   Serial.print(F("MAX_VEL="));  Serial.println(MAX_VEL,3);
 #endif
 }
