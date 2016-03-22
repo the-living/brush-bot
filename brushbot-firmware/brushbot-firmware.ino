@@ -1,5 +1,5 @@
 //------------------------------------------------------------------------------
-//brush-bot Drawing Robot 
+//brush-bot Drawing Robot
 //based on Draw robot by dan@marginallyclever.com
 //------------------------------------------------------------------------------
 // Copyright at end of file.  Please see
@@ -117,7 +117,7 @@
 #endif
 
 // Default servo library
-#include <Servo.h> 
+#include <Servo.h>
 
 // Saving config
 #include <EEPROM.h>
@@ -148,6 +148,14 @@ static float limit_bottom = -660;  // Distance to bottom of drawing area.
 static float limit_right = 620;  // Distance to right of drawing area.
 static float limit_left = -620;  // Distance to left of drawing area.
 
+//gondola dimensions
+//all distances of string attachment relative to pen position
+//(normally this is the centered in the gondola)
+static float gondola_top = 76; //distance to top string attachment on gondola
+static float gondola_bottom = -76; //distance to bottom string attachment on gondola
+static float gondola_right = 76; //distance to right string attachment on gondola
+static float gondola_left = -76; //distance to left string attachment on gondola
+
 // what are the motors called?
 char m1d='L';
 char m2d='R';
@@ -164,6 +172,12 @@ float THREADPERSTEP1;  // thread per step
 
 float SPOOL_DIAMETER2 = 20.0;
 float THREADPERSTEP2;  // thread per step
+
+float SPOOL_DIAMETER3 = 20.0;
+float THREADPERSTEP3;
+
+float SPOOL_DIAMETER4 = 20.0;
+float THREADPERSTEP4;
 
 // plotter position.
 static float posx, velx;
@@ -206,7 +220,7 @@ static void adjustSpoolDiameter(float diameter1,float diameter2) {
   SPOOL_DIAMETER1 = diameter1;
   float SPOOL_CIRC = SPOOL_DIAMETER1*PI;  // circumference
   THREADPERSTEP1 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
-  
+
   SPOOL_DIAMETER2 = diameter2;
   SPOOL_CIRC = SPOOL_DIAMETER2*PI;  // circumference
   THREADPERSTEP2 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
@@ -246,12 +260,12 @@ static char readSwitches() {
 static void setFeedRate(float v) {
   if(feed_rate==v) return;
   feed_rate=v;
-  
+
   if(v > MAX_FEEDRATE) v = MAX_FEEDRATE;
   if(v < MIN_FEEDRATE) v = MIN_FEEDRATE;
-  
+
   step_delay = 1000000.0 / v;
- 
+
 #if VERBOSE > 1
   Serial.print(F("feed_rate="));  Serial.println(feed_rate);
   Serial.print(F("step_delay="));  Serial.println(step_delay);
@@ -271,7 +285,7 @@ static void printFeedRate() {
 static void setPenAngle(int pen_angle) {
   if(posz!=pen_angle) {
     posz=pen_angle;
-    
+
     if(posz<PEN_DOWN_ANGLE){
         posz=PEN_DOWN_ANGLE;
 //        digitalWrite(SOLND_PIN, HIGH);
@@ -302,6 +316,27 @@ static void IK(float x, float y, long &l1, long &l2) {
   l2 = floor( sqrt(dx*dx+dy*dy) / THREADPERSTEP2 );
 }
 
+//Inverse Kinematics motor version - turns xy coordinates into lengths L1, L2, L3, L4
+static void IK4(float x, float y, long &l1, long &l2, long &l3, long &l4){
+  //find offset distance in all four directions (up, down, left, right)
+  float dy_up = y - limit_top - gondola_top;
+  float dy_dn = y - limit_bottom - gondola_bottom;
+  float dx_r = x - limit_right - gondola_right;
+  float dx_l = x - limit_left - gondola_left;
+
+  //find length to M1, M2, M3, M4
+  l1 = floor( stringLength(dx_l, dy_up, SPOOL_DIAMETER1) / THREADPERSTEP1 );
+  l2 = floor( stringLength(dx_r, dy_up, SPOOL_DIAMETER2) / THREADPERSTEP2 );
+  l3 = floor( stringLength(dx_r, dy_dn, SPOOL_DIAMETER3) / THREADPERSTEP3 );
+  l4 = floor( stringLength(dx_l, dy_dn, SPOOL_DIAMETER4) / THREADPERSTEP4 );
+}
+
+//convert x,y-offsets and spool diameter to length
+static float stringLength( float dx, float dy, float spool){
+  //pythagorean solution = A^2 = C^2 - B^2
+  return sqrt( (dx*dx + dy*dy) - (spool / 2.0)*(spool / 2.0) )
+}
+
 
 //------------------------------------------------------------------------------
 // Forward Kinematics - turns L1,L2 lengths into XY coordinates
@@ -311,7 +346,7 @@ static void FK(float l1, float l2,float &x,float &y) {
   float a = l1 * THREADPERSTEP1;
   float b = (limit_right-limit_left);
   float c = l2 * THREADPERSTEP2;
-  
+
   // slow, uses trig
   //float theta = acos((a*a+b*b-c*c)/(2.0*a*b));
   //x = cos(theta)*l1 + limit_left;
@@ -344,9 +379,9 @@ static void line(float x,float y,float z) {
   int dir2=d2<0?M2_REEL_IN:M2_REEL_OUT;
   long over=0;
   long i;
-  
+
 //  setPenAngle((int)z);
-  
+
   // bresenham's line algorithm.
   if(ad1>ad2) {
     for(i=0;i<ad1;++i) {
@@ -385,9 +420,9 @@ static void line_safe(float x,float y,float z) {
   // split up long lines to make them straighter?
   float dx=x-posx;
   float dy=y-posy;
-  
+
   float len=sqrt(dx*dx+dy*dy);
-  
+
   if(len<=CM_PER_SEGMENT) {
     line(x,y,z);
     return;
@@ -427,12 +462,12 @@ static void arc(float cx,float cy,float x,float y,float z,float dir) {
   float angle1=atan3(dy,dx);
   float angle2=atan3(y-cy,x-cx);
   float theta=angle2-angle1;
-  
+
   if(dir>0 && theta<0) angle2+=2*PI;
   else if(dir<0 && theta>0) angle1+=2*PI;
-  
+
   theta=angle2-angle1;
-  
+
   // get length of arc
   // float circ=PI*2.0*radius;
   // float len=theta*circ/(PI*2.0);
@@ -440,13 +475,13 @@ static void arc(float cx,float cy,float x,float y,float z,float dir) {
   float len = abs(theta) * radius;
 
   int i, segments = floor( len / CM_PER_SEGMENT );
- 
+
   float nx, ny, nz, angle3, scale;
 
   for(i=0;i<segments;++i) {
     // interpolate around the arc
     scale = ((float)i)/((float)segments);
-    
+
     angle3 = ( theta * scale ) + angle1;
     nx = cx + cos(angle3) * radius;
     ny = cy + sin(angle3) * radius;
@@ -454,7 +489,7 @@ static void arc(float cx,float cy,float x,float y,float z,float dir) {
     // send it to the planner
     line(nx,ny,nz);
   }
-  
+
   line(x,y,z);
 }
 
@@ -465,7 +500,7 @@ static void arc(float cx,float cy,float x,float y,float z,float dir) {
 static void teleport(float x,float y) {
   posx=x;
   posy=y;
-  
+
   // @TODO: posz?
   long L1,L2;
   IK(posx,posy,L1,L2);
@@ -487,21 +522,21 @@ static void help() {
 
 
 //------------------------------------------------------------------------------
-// find the current robot position and 
+// find the current robot position and
 static void FindHome() {
 #ifdef USE_LIMIT_SWITCH
   Serial.println(F("Homing..."));
-  
+
   if(readSwitches()) {
     Serial.println(F("** ERROR **"));
     Serial.println(F("Problem: Plotter is already touching switches."));
     Serial.println(F("Solution: Please unwind the strings a bit and try again."));
     return;
   }
-  
+
   int home_step_delay=300;
   int safe_out=50;
-  
+
   // reel in the left motor until contact is made.
   Serial.println(F("Find left..."));
   do {
@@ -510,7 +545,7 @@ static void FindHome() {
     delayMicroseconds(home_step_delay);
   } while(!readSwitches());
   laststep1=0;
-  
+
   // back off so we don't get a false positive on the next motor
   int i;
   for(i=0;i<safe_out;++i) {
@@ -518,7 +553,7 @@ static void FindHome() {
     delayMicroseconds(home_step_delay);
   }
   laststep1=safe_out;
-  
+
   // reel in the right motor until contact is made
   Serial.println(F("Find right..."));
   do {
@@ -528,14 +563,14 @@ static void FindHome() {
     laststep1++;
   } while(!readSwitches());
   laststep2=0;
-  
+
   // back off so we don't get a false positive that kills line()
   for(i=0;i<safe_out;++i) {
     M2_STEP(1,M2_REEL_OUT);
     delay(step_delay);
   }
   laststep2=safe_out;
-  
+
   Serial.println(F("Centering..."));
   line(0,0,posz);
 #endif // USE_LIMIT_SWITCH
@@ -557,10 +592,10 @@ static void where() {
 
 //------------------------------------------------------------------------------
 static void printConfig() {
-  Serial.print(m1d);              Serial.print(F("="));  
+  Serial.print(m1d);              Serial.print(F("="));
   Serial.print(limit_top);        Serial.print(F(","));
   Serial.print(limit_left);       Serial.print(F("\n"));
-  Serial.print(m2d);              Serial.print(F("="));  
+  Serial.print(m2d);              Serial.print(F("="));
   Serial.print(limit_top);        Serial.print(F(","));
   Serial.print(limit_right);      Serial.print(F("\n"));
   Serial.print(F("Bottom="));     Serial.println(limit_bottom);
@@ -617,7 +652,7 @@ static void LoadConfig() {
     // Retrieve Stored Configuration
     robot_uid=EEPROM_readLong(ADDR_UUID);
     adjustSpoolDiameter((float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f,
-                        (float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f);   //3 decimal places of percision is enough   
+                        (float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f);   //3 decimal places of percision is enough
     // save the new data so the next load doesn't screw up one bobbin size
     SaveSpoolDiameter();
     // update the EEPROM version
@@ -626,7 +661,7 @@ static void LoadConfig() {
     // Retrieve Stored Configuration
     robot_uid=EEPROM_readLong(ADDR_UUID);
     adjustSpoolDiameter((float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f,
-                        (float)EEPROM_readLong(ADDR_SPOOL_DIA2)/10000.0f);   //3 decimal places of percision is enough   
+                        (float)EEPROM_readLong(ADDR_SPOOL_DIA2)/10000.0f);   //3 decimal places of percision is enough
   } else {
     // Code should not get here if it does we should display some meaningful error message
     Serial.println(F("An Error Occurred during LoadConfig"));
@@ -702,7 +737,7 @@ void processConfig() {
   limit_bottom=parsenumber('B',limit_bottom);
   limit_right=parsenumber('R',limit_right);
   limit_left=parsenumber('L',limit_left);
-  
+
   char gg=parsenumber('G',m1d);
   char hh=parsenumber('H',m2d);
   char i=parsenumber('I',0);
@@ -725,10 +760,10 @@ void processConfig() {
       M2_REEL_OUT = HIGH;
     }
   }
-  
+
   // @TODO: check t>b, r>l ?
   printConfig();
-  
+
   teleport(0,0);
 }
 
@@ -737,7 +772,7 @@ void processConfig() {
 static void processCommand() {
   // blank lines
   if(buffer[0]==';') return;
-  
+
   long cmd;
 
   // is there a line number?
@@ -749,10 +784,10 @@ static void processCommand() {
       Serial.println(line_number);
       return;
     }
-    
-    
+
+
     // is there a checksum?
-    
+
     if(strchr(buffer,'*')!=0) {
       // Yes.  Is it valid?
       unsigned char checksum=0;
@@ -770,14 +805,14 @@ static void processCommand() {
       Serial.println(line_number);
       return;
     }
-    
+
     //confirm command recieved and OK
     Serial.print(F("OK "));
     Serial.println(line_number);
     line_number++;
-    
+
   }
-  
+
   if(!strncmp(buffer,"UID",3)) {
     robot_uid=atoi(strchr(buffer,' ')+1);
     SaveUID();
@@ -800,17 +835,17 @@ static void processCommand() {
   case 1: {  // line
       Vector3 offset=get_end_plus_offset();
       setFeedRate(parsenumber('F',feed_rate));
-      
+
       //fire solenoid if G01
       if (cmd == 1){
-//        digitalWrite(SOLND_PIN, HIGH); 
+//        digitalWrite(SOLND_PIN, HIGH);
           s1.write( PEN_DOWN_ANGLE );
       }
       else {
 //        digitalWrite(SOLND_PIN, LOW);
           s1.write( PEN_UP_ANGLE );
       }
-      
+
       line_safe( parsenumber('X',(absolute_mode?offset.x:0)*10)*0.1 + (absolute_mode?0:offset.x),
                  parsenumber('Y',(absolute_mode?offset.y:0)*10)*0.1 + (absolute_mode?0:offset.y),
                  parsenumber('Z',(absolute_mode?offset.z:0)) + (absolute_mode?0:offset.z) );
@@ -823,20 +858,20 @@ static void processCommand() {
   case 3: {  // arc
       Vector3 offset=get_end_plus_offset();
       setFeedRate(parsenumber('F',feed_rate));
-      
+
       //fire solenoid
 //      digitalWrite(SOLND_PIN, HIGH);
-      
+
       arc(parsenumber('I',(absolute_mode?offset.x:0)*10)*0.1 + (absolute_mode?0:offset.x),
           parsenumber('J',(absolute_mode?offset.y:0)*10)*0.1 + (absolute_mode?0:offset.y),
           parsenumber('X',(absolute_mode?offset.x:0)*10)*0.1 + (absolute_mode?0:offset.x),
           parsenumber('Y',(absolute_mode?offset.y:0)*10)*0.1 + (absolute_mode?0:offset.y),
           parsenumber('Z',(absolute_mode?offset.z:0)) + (absolute_mode?0:offset.z),
           (cmd==2) ? -1 : 1);
-      
+
       //turn off solenoid
-//      digitalWrite(SOLND_PIN, LOW);    
-      
+//      digitalWrite(SOLND_PIN, LOW);
+
       break;
     }
   case 4:  // dwell
@@ -908,7 +943,7 @@ static void processCommand() {
       // adjust spool diameters
       float amountL=parsenumber('L',SPOOL_DIAMETER1);
       float amountR=parsenumber('R',SPOOL_DIAMETER2);
-  
+
       float tps1=THREADPERSTEP1;
       float tps2=THREADPERSTEP2;
       adjustSpoolDiameter(amountL,amountR);
@@ -948,14 +983,14 @@ void tools_setup() {
 //------------------------------------------------------------------------------
 void setup() {
   LoadConfig();
-  
+
   // initialize the read buffer
   sofar=0;
   // start communications
   Serial.begin(BAUD);
   Serial.print(F("\n\nHELLO WORLD! I AM DRAWBOT #"));
   Serial.println(robot_uid);
-  
+
 #ifdef USE_SD_CARD
   SD.begin();
   SD_ListFiles();
@@ -971,21 +1006,21 @@ void setup() {
   // initialize the scale
   strcpy(mode_name,"mm");
   mode_scale=0.1;
-  
+
   setFeedRate(65.0);  // *30 because i also /2
-  
+
   // servo should be on SER1, pin 10.
   s1.attach(SERVO_PIN);
-  
+
 //  myservo.attach(9);
-  
+
   //setup Solenoid firing pin
 //  pinMode(SOLND_PIN, OUTPUT);
-  
+
   // turn on the pull up resistor
   digitalWrite(L_PIN,HIGH);
   digitalWrite(R_PIN,HIGH);
-  
+
   tools_setup();
 
   // initialize the plotter position.
@@ -993,12 +1028,12 @@ void setup() {
   velx=0;
   velx=0;
   setPenAngle(PEN_UP_ANGLE);
-  
+
   // test Micro
   digitalWrite(9, HIGH);
   delay(50);
   digitalWrite(9, LOW);
-  
+
   // display the help at startup.
   help();
   ready();
@@ -1014,12 +1049,12 @@ void Serial_listen() {
     if(sofar<MAX_BUF) buffer[sofar++]=c;
     if(c=='\n' || c=='\r') {
       buffer[sofar]=0;
-      
+
 #if VERBOSE > 0
       // echo confirmation
       Serial.println(buffer);
 #endif
-   
+
       // do something with the command
       processCommand();
       ready();
@@ -1032,7 +1067,7 @@ void Serial_listen() {
 //------------------------------------------------------------------------------
 void loop() {
   Serial_listen();
-  
+
   // The PC will wait forever for the ready signal.
   // if Arduino hasn't received a new instruction in a while, send ready() again
   // just in case USB garbled ready and each half is waiting on the other.
@@ -1040,4 +1075,3 @@ void loop() {
     ready();
   }
 }
-
