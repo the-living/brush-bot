@@ -291,8 +291,8 @@ static void setPenAngle(int pen_angle) {
 
 
 //------------------------------------------------------------------------------
-// Inverse Kinematics - turns XY coordinates into lengths L1,L2
-static void IK(float x, float y, long &l1, long &l2) {
+// OLD Inverse Kinematics - turns XY coordinates into lengths L1,L2
+static void IK2(float x, float y, long &l1, long &l2) {
   // find length to M1
   float dy = y - limit_top;
   float dx = x - limit_left;
@@ -300,6 +300,27 @@ static void IK(float x, float y, long &l1, long &l2) {
   // find length to M2
   dx = limit_right - x;
   l2 = floor( sqrt(dx*dx+dy*dy) / THREADPERSTEP2 );
+}
+
+// Inverse Kinematics - turns XY coordinates into lengths L1,L2,L3,L4
+static void IK(float x, float y, long &l1, long &l2, long &l3, long &l4){
+  //find offset distance in all four directions (up, down, left, right)
+  float dy_up = y - limit_top - gondola_top;
+  float dy_dn = y - limit_bottom - gondola_bottom;
+  float dx_r = x - limit_right - gondola_right;
+  float dx_l = x - limit_left - gondola_left;
+
+  //find length to M1, M2, M3, M4
+  l1 = floor( stringLength(dx_l, dy_up, SPOOL_DIAMETER1) / THREADPERSTEP1 );
+  l2 = floor( stringLength(dx_r, dy_up, SPOOL_DIAMETER2) / THREADPERSTEP2 );
+  l3 = floor( stringLength(dx_r, dy_dn, SPOOL_DIAMETER3) / THREADPERSTEP3 );
+  l4 = floor( stringLength(dx_l, dy_dn, SPOOL_DIAMETER4) / THREADPERSTEP4 );
+}
+
+//convert x,y-offsets and spool diameter to length
+static float stringLength( float dx, float dy, float spool){
+  //pythagorean solution = A^2 = C^2 - B^2
+  return sqrt( (dx*dx + dy*dy) - (spool / 2.0)*(spool / 2.0) )
 }
 
 
