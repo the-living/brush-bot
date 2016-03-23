@@ -427,6 +427,11 @@ static void processCommand() {
 
     case 49: s1.write( PEN_DOWN_ANGLE ); break; //engage sprayer servo
     case 50: s1.write( PEN_UP_ANGLE ); break; //disengage sprayer servo
+
+    case 100: { //M100 - set stepper positions manually
+      teleport( parsenumber( 'X', 0 ), parsenumber( 'Y', 0 ) );
+      break;
+    }
   }
 
   // MOVE/DRAW COMMANDS
