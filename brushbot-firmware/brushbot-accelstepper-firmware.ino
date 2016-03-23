@@ -1,9 +1,16 @@
+// /////////////////////////////////////////////////////////////////////////////
+//
+// brush-bot Drawing Robot | The Living | 2016
+//
+// /////////////////////////////////////////////////////////////////////////////
+
 //------------------------------------------------------------------------------
-//brush-bot Drawing Robot
-//based on Draw robot by dan@marginallyclever.com
+// ACKNOWLEDGEMENTS
 //------------------------------------------------------------------------------
-// Copyright at end of file.  Please see
-// http://www.github.com/MarginallyClever/Makelangelo for more information.
+// Serial communication, GCODE parsing, and movement methods
+// inspired by DrawBot robot by dan@marginallyclever.com
+// http://www.github.com/MarginallyClever/Makelangelo
+
 
 //------------------------------------------------------------------------------
 // EXTERNAL DEPENDENCIES
@@ -15,12 +22,8 @@
 #include <AccelStepper.h>
 #include <MultiStepper.h>
 
-//default servo library
+//Default Arduino servo library
 #include <Servo.h>
-
-//vector math library
-
-#include <Vector3.h>
 
 //------------------------------------------------------------------------------
 // CONSTANTS
