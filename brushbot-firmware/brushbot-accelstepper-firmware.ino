@@ -405,28 +405,28 @@ static void processCommand() {
     case 0: disable_motors(); break; //disengage all steppers
     case 1: activate_motors(); break; //engage all steppers
 
-    case 9: m1.move(1); break; //jog M1 stepper forward
-    case 10: m1.move(-1); break; //jog M1 stepper backward
-    case 11: m1.disableOutputs(); break; //disengage M1 stepper
-    case 12: m1.enableOutputs(); break; //engage M1 stepper
+    case 10: m1.move(1); break; //jog M1 stepper forward
+    case 11: m1.move(-1); break; //jog M1 stepper backward
+    case 12: m1.disableOutputs(); break; //disengage M1 stepper
+    case 13: m1.enableOutputs(); break; //engage M1 stepper
 
-    case 19: m2.move(1); break; //jog M2 stepper forward
-    case 20: m2.move(-1); break; //jog M2 stepper backward
-    case 21: m2.disableOutputs(); break; //disengage M2 stepper
-    case 22: m2.enableOutputs(); break; //engage M2 stepper
+    case 20: m2.move(1); break; //jog M2 stepper forward
+    case 21: m2.move(-1); break; //jog M2 stepper backward
+    case 22: m2.disableOutputs(); break; //disengage M2 stepper
+    case 23: m2.enableOutputs(); break; //engage M2 stepper
 
-    case 29: m3.move(1); break; //jog M3 stepper forward
-    case 30: m3.move(-1); break; //jog M3 stepper backward
-    case 31: m3.disableOutputs(); break; //disengage M3 stepper
-    case 32: m3.enableOutputs(); break; //engage M3 stepper
+    case 30: m3.move(1); break; //jog M3 stepper forward
+    case 31: m3.move(-1); break; //jog M3 stepper backward
+    case 32: m3.disableOutputs(); break; //disengage M3 stepper
+    case 33: m3.enableOutputs(); break; //engage M3 stepper
 
-    case 39: m4.move(1); break; //jog M4 stepper forward
-    case 40: m4.move(-1); break; //jog M4 stepper backward
-    case 41: m4.disableOutputs(); break; //disengage M4 stepper
-    case 42: m4.enableOutputs(); break; //engage M4 stepper
+    case 40: m4.move(1); break; //jog M4 stepper forward
+    case 41: m4.move(-1); break; //jog M4 stepper backward
+    case 42: m4.disableOutputs(); break; //disengage M4 stepper
+    case 43: m4.enableOutputs(); break; //engage M4 stepper
 
-    case 49: s1.write( PEN_DOWN_ANGLE ); break; //engage sprayer servo
-    case 50: s1.write( PEN_UP_ANGLE ); break; //disengage sprayer servo
+    case 50: s1.write( PEN_DOWN_ANGLE ); break; //engage sprayer servo
+    case 51: s1.write( PEN_UP_ANGLE ); break; //disengage sprayer servo
 
     case 100: { //M100 - set stepper positions manually
       teleport( parsenumber( 'X', 0 ), parsenumber( 'Y', 0 ) );
