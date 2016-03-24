@@ -109,36 +109,38 @@ static Servo s1;
 // all distances are measured relative to the calibration point of the plotter
 // (normally, this is located in the center of the drawing)
 // measurement is in millimeters
-static float limit_top = 610; //distance to top motor axle centers
-static float limit_bottom = -610; //distance to bottom motor axle centers
-static float limit_right = 610; //distance to right motor axle centers
-static float limit_left = -610; //distance to left motor axle centers
+static float limit_top = 585; //distance to top motor axle centers
+static float limit_bottom = -585; //distance to bottom motor axle centers
+static float limit_right = 570; //distance to right motor axle centers
+static float limit_left = -570; //distance to left motor axle centers
 
 // margin dimensions
 // safe area inset from plotter extents
-static float margin_top = 100;
-static float margin_bottom = 100;
-static float margin_right = 100;
-static float margin_left = 100;
+static float margin_top = 0;
+static float margin_bottom = 0;
+static float margin_right = 0;
+static float margin_left = 0;
+
+static boolean useLimits = false;
 
 // gondola dimensions
 // all distances are measured relative to the nozzle center
 // and assume string attachment at corners
 // (normally, cthe nozzle is centered in the gondola)
-static float gondola_top = 76; //distance to top string attachments
-static float gondola_bottom = -76; //distance to bottom string attachments
-static float gondola_right = 76; //distance to right string attachments
-static float gondola_left = -76; //distance to left string attachments
+static float gondola_top = 45; //distance to top string attachments
+static float gondola_bottom = -45; //distance to bottom string attachments
+static float gondola_right = 45; //distance to right string attachments
+static float gondola_left = -45; //distance to left string attachments
 
 // set spool dimensions
 // and setup values for determining feed rate
-float SPOOL_DIAMETER1 = 20.0;
+float SPOOL_DIAMETER1 = 30.0;
 float DISTPERSTEP1;
-float SPOOL_DIAMETER2 = 20.0;
+float SPOOL_DIAMETER2 = 30.0;
 float DISTPERSTEP2;
-float SPOOL_DIAMETER3 = 20.0;
+float SPOOL_DIAMETER3 = 30.0;
 float DISTPERSTEP3;
-float SPOOL_DIAMETER4 = 20.0;
+float SPOOL_DIAMETER4 = 30.0;
 float DISTPERSTEP4;
 
 //plotter position
@@ -207,8 +209,10 @@ static void line( float x, float y, float z){
   //Line drawing method
 
   //limit destinations to safe canvas area
-  x = min( max( x, limit_left + margin_left), limit_right - margin_right );
-  y = min( max( y, limit_bottom + margin_bottom ), limit_top - margin_top );
+  if( useLimits ){
+    x = min( max( x, limit_left + margin_left), limit_right - margin_right );
+    y = min( max( y, limit_bottom + margin_bottom ), limit_top - margin_top );
+  }
 
   long positions[4]; //array of desired string lengths
   IK( x, y, positions[0], positions[1], positions[2], positions[3] );
