@@ -14,15 +14,15 @@ Draws a line from current position to given (x, y) positions
 ```
 G01 X100.0 Y200.0
 ```
-####G02 - Arc (Clockwise)
-Draws an arc from current position to a given (x, y) position around center (i, j) in a clockwise direction
+####G02-G03 - Arc
+Draws an arc from current position to a given (x, y) position around center (i, j)
 Sweep of arc must not be greater than 180 degrees (PI radians)
+
+*clockwise arc*
 ```
 G02 I50.0 J10.0 X100.0 Y200.0
 ```
-####G03 - Arc (Counter-clockwise)
-Draws an arc from current position to a given (x, y) position around center (i, j) in a counter-clockwise direction
-Sweep of arc must not be greater than 180 degrees (PI radians)
+*counter-clockwise arc*
 ```
 G03 I50.0 J10.0 X100.0 Y200.0
 ```
@@ -42,86 +42,83 @@ Engages all motors. Motors will resist movement.
 ```
 M01
 ```
-####M10 - Forward Jog (Stepper 1)
-Moves Stepper 1 (top-left corner) forward one step.
+####M10-M20-M30-M40 - Forward Jog
+Moves single stepper motor forward one step.
+
+*M1 (top-left)*
 ```
 M10
 ```
-####M11 - Backward Jog (Stepper 1)
-Moves Stepper 1 (top-left corner) backward one step.
-```
-M11
-```
-####M12 - Disengage Motor (Stepper 1)
-Disengages Stepper 1 (top-left corner). Motor will spin freely, and will not register positional changes.
-```
-M12
-```
-####M13 - Engage Motor (Stepper 1)
-Engages Stepper 1 (top-left corner). Motor will resist movement.
-```
-M13
-```
-####M20 - Forward Jog (Stepper 2)
-Moves Stepper 2 (top-right corner) forward one step.
+*M2 (top-right)*
 ```
 M20
 ```
-####M21 - Backward Jog (Stepper 2)
-Moves Stepper 2 (top-right corner) backward one step.
-```
-M21
-```
-####M22 - Disengage Motor (Stepper 2)
-Disengages Stepper 2 (top-right corner). Motor will spin freely, and will not register positional changes.
-```
-M22
-```
-####M23 - Engage Motor (Stepper 2)
-Engages Stepper 2 (top-right corner). Motor will resist movement.
-```
-M23
-```
-####M30 - Forward Jog (Stepper 3)
-Moves Stepper 3 (bottom-right corner) forward one step.
+*M3 (bottom-right)*
 ```
 M30
 ```
-####M31 - Backward Jog (Stepper 3)
-Moves Stepper 3 (bottom-right corner) backward one step.
-```
-M31
-```
-####M32 - Disengage Motor (Stepper 3)
-Disengages Stepper 3 (bottom-right corner). Motor will spin freely, and will not register positional changes.
-```
-M32
-```
-####M33 - Engage Motor (Stepper 3)
-Engages Stepper 3 (bottom-right corner). Motor will resist movement.
-```
-M33
-```
-####M40 - Forward Jog (Stepper 4)
-Moves Stepper 4 (bottom-left corner) forward one step.
+*M4 (bottom-left)*
 ```
 M40
 ```
-####M41 - Backward Jog (Stepper 4)
-Moves Stepper 4 (bottom-left corner) backward one step.
+####M11-M21-M31-M41 - Backward Jog (Stepper 1)
+Moves single stepper motor backward one step.
+
+*M1 (top-left)*
+```
+M11
+```
+*M2 (top-right)*
+```
+M21
+```
+*M3 (bottom-right)*
+```
+M31
+```
+*M4 (bottom-left)*
 ```
 M41
 ```
-####M42 - Disengage Motor (Stepper 4)
-Disengages Stepper 1 (bottom-left corner). Motor will spin freely, and will not register positional changes.
+####M12-M22-M32-M42 - Disengage Motor
+Disengages single stepper motor. Motor will spin freely, and will not register positional changes.
+
+*M1 (top-left)*
+```
+M12
+```
+*M2 (top-right)*
+```
+M22
+```
+*M3 (bottom-right)*
+```
+M32
+```
+*M4 (bottom-left)*
 ```
 M42
 ```
-####M43 - Engage Motor (Stepper 4)
-Engages Stepper 4 (bottom-left corner). Motor will resist movement.
+####M13-M23-M33-M43 - Engage Motor
+Engages single stepper motor. Motor will resist movement.
+
+*M1 (top-left)*
+```
+M13
+```
+*M2 (top-right)*
+```
+M23
+```
+*M3 (bottom-right)*
+```
+M33
+```
+*M4 (bottom-left)*
 ```
 M43
 ```
+
 ####M50 - Engage Sprayer
 Engages sprayer servo.
 ```
@@ -142,4 +139,20 @@ M100
 *Set to position (x, y):*
 ```
 M100 X50.0 Y100.0
+```
+##Machine Setting Commands
+####D01 - Update Plotter Dimensions
+Updates plotter dimensions in firmware (mm).
+```
+D01 T500.0 B-500.0 R450.0 L-450.0
+```
+####D05 - Update Spool Diameters
+Updates all spool diameters in firmware (mm).
+```
+D05 S40.0
+```
+####D10 - Update Motor Max Speed
+Updates max motor speed in firmware (steps/s).
+```
+D10 S150.0
 ```

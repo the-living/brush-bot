@@ -135,13 +135,13 @@ static float gondola_left = -45; //distance to left string attachments
 // set spool dimensions
 // and setup values for determining feed rate
 float SPOOL_DIAMETER1 = 30.0;
-float DISTPERSTEP1;
+
 float SPOOL_DIAMETER2 = 30.0;
-float DISTPERSTEP2;
+
 float SPOOL_DIAMETER3 = 30.0;
-float DISTPERSTEP3;
+
 float SPOOL_DIAMETER4 = 30.0;
-float DISTPERSTEP4;
+
 
 //plotter position
 static float posx, posy;
@@ -401,6 +401,43 @@ static void processCommand() {
     line_number++;
 
   }
+
+  // MACHINE SETTINGS COMMANDS
+  //---------------------------
+  cmd = parsenumber( 'D', -1 );
+  switch( cmd ){
+    case 1: { //update machine dimensions
+      limit_top = parsenumber( 'T', limit_top );
+      limit_bottom = parsenumber( 'B', limit_bottom );
+      limit_right = parsenumber( 'R', limit_right );
+      limit_left = parsenumber( 'L', limit_left );
+
+      teleport( posx, posy ); //update motor positions
+
+      break;
+    }
+
+    case 5: { //update spool diameters
+      SPOOL_DIAMETER1 = parsenumber( 'S', SPOOL_DIAMETER1 );
+      SPOOL_DIAMETER2 = parsenumber( 'S', SPOOL_DIAMETER2 );
+      SPOOL_DIAMETER3 = parsenumber( 'S', SPOOL_DIAMETER3 );
+      SPOOL_DIAMETER4 = parsenumber( 'S', SPOOL_DIAMETER4 );
+
+      teleport( posx, posy ); //update motor positions
+
+      break;
+    }
+
+    case 10: { //update motor max speed
+      MAX_SPEED = parsenumber( 'S', MAX_SPEED );
+      m1.setMaxSpeed( MAX_SPEED );
+      m2.setMaxSpeed( MAX_SPEED );
+      m3.setMaxSpeed( MAX_SPEED );
+      m4.setMaxSpeed( MAX_SPEED );
+      break;
+    }
+  }
+
 
   // MOTOR OVERRIDE COMMANDS
   //---------------------------
