@@ -65,10 +65,10 @@
 //define forward motor direction
 // 0 == clockwise
 // 1 == counterclockwise
-#define M1_FORWARD    (0) //M1 Forward Direction
-#define M2_FORWARD    (1) //M2 Forward Direction
-#define M3_FORWARD    (0) //M3 Forward Direction
-#define M4_FORWARD    (1) //M4 Forward Direction
+#define M1_FORWARD    (1) //M1 Forward Direction
+#define M2_FORWARD    (0) //M2 Forward Direction
+#define M3_FORWARD    (1) //M3 Forward Direction
+#define M4_FORWARD    (0) //M4 Forward Direction
 
 
 //define servo pins
@@ -98,7 +98,9 @@ static AccelStepper m2( AccelStepper::DRIVER, M2_STEP, M2_DIR );
 static AccelStepper m3( AccelStepper::DRIVER, M3_STEP, M3_DIR );
 static AccelStepper m4( AccelStepper::DRIVER, M4_STEP, M4_DIR );
 
-static int motor_speed = 200;
+static int motor_speed = 100; //steps per s
+static int motor_accel = 50;
+static int jog_dist = 10;
 
 //initialize Multistepper object
 // http://www.airspayce.com/mikem/arduino/AccelStepper/classMultiStepper.html
@@ -149,6 +151,9 @@ float THREADPERSTEP4;
 //plotter position
 static float posx, posy;
 static float posz; //pen state
+
+//motor position
+static long laststep1, laststep2, laststep3, laststep4;
 
 //serial communication reception
 static char buffer[ MAX_BUF + 1 ]; // Serial buffer
@@ -248,6 +253,11 @@ static void line( float x, float y, float z){
   posx = x;
   posy = y;
   posz = z;
+
+  laststep1 = positions[0];
+  laststep2 = positions[1];
+  laststep3 = positions[2];
+  laststep4 = positions[3];
 }
 
 static void line_safe( float x, float y, float z ){
@@ -339,6 +349,10 @@ static void teleport( float x, float y ){
   IK( posx, posy, L1, L2, L3, L4);
 
   //update stepper positions
+  laststep1 = L1;
+  laststep2 = L2;
+  laststep3 = L3;
+  laststep4 = L4;
   m1.setCurrentPosition(L1);
   m2.setCurrentPosition(L2);
   m3.setCurrentPosition(L3);
@@ -349,18 +363,27 @@ static void teleport( float x, float y ){
 void disable_motors() {
   // disengage motors
   m1.disableOutputs();
+  //digitalWrite(M1_ENABLE, HIGH);
   m2.disableOutputs();
+  //digitalWrite(M2_ENABLE, HIGH);
   m3.disableOutputs();
+  //digitalWrite(M3_ENABLE, HIGH);
   m4.disableOutputs();
+  //digitalWrite(M4_ENABLE, HIGH);
 }
 
 void activate_motors() {
   // engage motors
   m1.enableOutputs();
+  //digitalWrite(M1_ENABLE, LOW);
   m2.enableOutputs();
+  //digitalWrite(M2_ENABLE, LOW);
   m3.enableOutputs();
+  //digitalWrite(M3_ENABLE, LOW);
   m4.enableOutputs();
+  //digitalWrite(M4_ENABLE, LOW);
 }
+
 
 // COMMAND METHODS
 //------------------------------------------------------------------------------
@@ -470,23 +493,23 @@ static void processCommand() {
     case 0: disable_motors(); break; //disengage all steppers
     case 1: activate_motors(); break; //engage all steppers
 
-    case 10: m1.move(1); break; //jog M1 stepper forward
-    case 11: m1.move(-1); break; //jog M1 stepper backward
+    case 10: m1.move(jog_dist); m1.run(); break; //jog M1 stepper forward
+    case 11: m1.move(-jog_dist); m1.run(); break; //jog M1 stepper backward
     case 12: m1.disableOutputs(); break; //disengage M1 stepper
     case 13: m1.enableOutputs(); break; //engage M1 stepper
 
-    case 20: m2.move(1); break; //jog M2 stepper forward
-    case 21: m2.move(-1); break; //jog M2 stepper backward
+    case 20: m2.move(jog_dist); m2.run(); break; //jog M2 stepper forward
+    case 21: m2.move(-jog_dist); m2.run(); break; //jog M2 stepper backward
     case 22: m2.disableOutputs(); break; //disengage M2 stepper
     case 23: m2.enableOutputs(); break; //engage M2 stepper
 
-    case 30: m3.move(1); break; //jog M3 stepper forward
-    case 31: m3.move(-1); break; //jog M3 stepper backward
+    case 30: m3.move(jog_dist); m3.run(); break; //jog M3 stepper forward
+    case 31: m3.move(-jog_dist); m3.run(); break; //jog M3 stepper backward
     case 32: m3.disableOutputs(); break; //disengage M3 stepper
     case 33: m3.enableOutputs(); break; //engage M3 stepper
 
-    case 40: m4.move(1); break; //jog M4 stepper forward
-    case 41: m4.move(-1); break; //jog M4 stepper backward
+    case 40: m4.move(jog_dist); m4.run(); break; //jog M4 stepper forward
+    case 41: m4.move(-jog_dist); m4.run(); break; //jog M4 stepper backward
     case 42: m4.disableOutputs(); break; //disengage M4 stepper
     case 43: m4.enableOutputs(); break; //engage M4 stepper
 
@@ -610,22 +633,28 @@ void setup(){
   Serial.println( F("\n\nHELLO WORLD! I AM BRUSHBOT"));
 
   //set stepper motor enable pins
-  m1.setEnablePin( M1_ENABLE );
-  m2.setEnablePin( M2_ENABLE );
-  m3.setEnablePin( M3_ENABLE );
-  m4.setEnablePin( M4_ENABLE );
+  //m1.setEnablePin( M1_ENABLE );
+  //m2.setEnablePin( M2_ENABLE );
+  //m3.setEnablePin( M3_ENABLE );
+  //m4.setEnablePin( M4_ENABLE );
+
+  // set stepper directions
+  m1.setPinsInverted(M1_FORWARD, false, false); //direction inversion for M1
+  m2.setPinsInverted(M2_FORWARD, false, false); //direction inversion for M2
+  m3.setPinsInverted(M3_FORWARD, false, false); //direction inversion for M3
+  m4.setPinsInverted(M4_FORWARD, false, false); //direction inversion for M4
+
+  activate_motors();
 
   // set stepper max speed
   m1.setMaxSpeed( motor_speed );
+  m1.setAcceleration( motor_accel );
   m2.setMaxSpeed( motor_speed );
+  m2.setAcceleration( motor_accel );
   m3.setMaxSpeed( motor_speed );
+  m3.setAcceleration( motor_accel );
   m4.setMaxSpeed( motor_speed );
-
-  // set stepper directions
-  m1.setPinsInverted(M1_FORWARD, 0, 0); //direction inversion for M1
-  m2.setPinsInverted(M2_FORWARD, 0, 0); //direction inversion for M2
-  m3.setPinsInverted(M3_FORWARD, 0, 0); //direction inversion for M3
-  m4.setPinsInverted(M4_FORWARD, 0, 0); //direction inversion for M4
+  m4.setAcceleration( motor_accel );
 
   // add individual steppers to MultiStepper object
   steppers.addStepper( m1 );
