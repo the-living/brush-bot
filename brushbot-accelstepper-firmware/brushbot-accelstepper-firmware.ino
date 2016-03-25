@@ -575,6 +575,35 @@ void Serial_listen() {
 //------------------------------------------------------------------------------
 void setup(){
 
+  //pin settings
+  pinMode(M1_STEP, OUTPUT);
+  pinMode(M1_DIR, OUTPUT);
+  pinMode(M1_ENABLE, OUTPUT);
+
+  digitalWrite(M1_ENABLE, LOW);
+  digitalWrite(M1_DIR, LOW);
+
+  pinMode(M2_STEP, OUTPUT);
+  pinMode(M2_DIR, OUTPUT);
+  pinMode(M2_ENABLE, OUTPUT);
+
+  digitalWrite(M2_ENABLE, LOW);
+  digitalWrite(M2_DIR, LOW);
+
+  pinMode(M3_STEP, OUTPUT);
+  pinMode(M3_DIR, OUTPUT);
+  pinMode(M3_ENABLE, OUTPUT);
+
+  digitalWrite(M3_ENABLE, LOW);
+  digitalWrite(M3_DIR, LOW);
+
+  pinMode(M4_STEP, OUTPUT);
+  pinMode(M4_DIR, OUTPUT);
+  pinMode(M4_ENABLE, OUTPUT);
+
+  digitalWrite(M4_ENABLE, LOW);
+  digitalWrite(M4_DIR, LOW);
+
   //initialize serial read buffer
   sofar = 0;
   Serial.begin( BAUD );
