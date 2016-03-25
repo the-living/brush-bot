@@ -11,7 +11,6 @@
 
 #include <AccelStepper.h>
 #include <MultiStepper.h>
-//#include <AFMotor.h>
 
 
 #define X_STEP_PIN         54
@@ -47,7 +46,34 @@ AccelStepper stepper4(1, Q_STEP_PIN, Q_DIR_PIN);
 
 void setup()
 {
-
+  pinMode(X_STEP_PIN  , OUTPUT);
+  pinMode(X_DIR_PIN    , OUTPUT);
+  pinMode(X_ENABLE_PIN    , OUTPUT);
+  
+  digitalWrite(X_ENABLE_PIN    , LOW);
+  digitalWrite(X_DIR_PIN, LOW);
+  
+  pinMode(Y_STEP_PIN  , OUTPUT);
+  pinMode(Y_DIR_PIN    , OUTPUT);
+  pinMode(Y_ENABLE_PIN    , OUTPUT);
+  
+  digitalWrite(Y_ENABLE_PIN    , LOW);
+  digitalWrite(Y_DIR_PIN, LOW);
+  
+  pinMode(E_STEP_PIN  , OUTPUT);
+  pinMode(E_DIR_PIN    , OUTPUT);
+  pinMode(E_ENABLE_PIN    , OUTPUT);
+  
+  digitalWrite(E_ENABLE_PIN    , LOW);
+  digitalWrite(E_DIR_PIN, LOW);
+  
+  pinMode(Q_STEP_PIN  , OUTPUT);
+  pinMode(Q_DIR_PIN    , OUTPUT);
+  pinMode(Q_ENABLE_PIN    , OUTPUT);
+  
+  digitalWrite(Q_ENABLE_PIN    , LOW);
+  digitalWrite(Q_DIR_PIN, LOW);
+  
    Serial.begin(9600);           // set up Serial library at 9600 bps
    Serial.println("MultiStepper test!");
 
@@ -55,32 +81,36 @@ void setup()
    positions[1] = -20;
    positions[2] = 20;
    positions[3] = -20;
+  
+  steppers.moveTo(positions);
 
   stepper1.setMaxSpeed(50);
-  stepper1.setAcceleration(50);
+  stepper1.setAcceleration(10);
 
   stepper2.setMaxSpeed(50);
-  stepper2.setAcceleration(50);
+  stepper2.setAcceleration(10);
 
   stepper3.setMaxSpeed(50);
-  stepper3.setAcceleration(50);
+  stepper3.setAcceleration(10);
 
   stepper4.setMaxSpeed(50);
-  stepper4.setAcceleration(50);
+  stepper4.setAcceleration(10);
 
   steppers.addStepper(stepper1);
   steppers.addStepper(stepper2);
   steppers.addStepper(stepper3);
   steppers.addStepper(stepper4);
+
+  steppers.moveTo(positions);
 }
 
 void loop()
 {
-    steppers.moveTo(positions);
     steppers.runSpeedToPosition();
 
     for( int i = 0; i < 4; i++){
       positions[i] *= -1;
+      steppers.moveTo(positions);
     }
 
     delay(1000);
