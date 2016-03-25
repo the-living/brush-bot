@@ -174,7 +174,7 @@ static float atan3( float dx, float dy ){
 static float stringLength( float dx, float dy, float spool){
   //convert x,y-offsets and spool diameter to length of unspooled string
   //pythagorean solution = A^2 = C^2 - B^2
-  return sqrt( (dx*dx + dy*dy) - (spool / 2.0)*(spool / 2.0) )
+  return sqrt( (dx*dx + dy*dy) - (spool / 2.0)*(spool / 2.0) );
 }
 
 
