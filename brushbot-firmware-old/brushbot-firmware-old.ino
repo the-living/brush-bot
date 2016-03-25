@@ -249,7 +249,7 @@ static void adjustSpoolDiameter(float diameter1,float diameter2,float diameter3,
   SPOOL_DIAMETER3 = diameter3;
   SPOOL_CIRC = SPOOL_DIAMETER3*PI;  // circumference
   THREADPERSTEP3 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
-[
+  
   SPOOL_DIAMETER4 = diameter4;
   SPOOL_CIRC = SPOOL_DIAMETER4*PI;  // circumference
   THREADPERSTEP4 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step]
@@ -367,7 +367,7 @@ static void IK4(float x, float y, long &l1, long &l2, long &l3, long &l4){
 //convert x,y-offsets and spool diameter to length
 static float stringLength( float dx, float dy, float spool){
   //pythagorean solution = A^2 = C^2 - B^2
-  return sqrt( (dx*dx + dy*dy) - (spool / 2.0)*(spool / 2.0) )
+  return sqrt( (dx*dx + dy*dy) - (spool / 2.0)*(spool / 2.0) );
 }
 
 
@@ -684,8 +684,7 @@ static void LoadConfig() {
   if(version_number==3) {
     // Retrieve Stored Configuration
     robot_uid=EEPROM_readLong(ADDR_UUID);
-    adjustSpoolDiameter((float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f,
-                        (float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f);   //3 decimal places of percision is enough
+    //adjustSpoolDiameter((float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0(float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f);   //3 decimal places of percision is enough
     // save the new data so the next load doesn't screw up one bobbin size
     SaveSpoolDiameter();
     // update the EEPROM version
@@ -693,8 +692,7 @@ static void LoadConfig() {
   } else if(version_number==EEPROM_VERSION) {
     // Retrieve Stored Configuration
     robot_uid=EEPROM_readLong(ADDR_UUID);
-    adjustSpoolDiameter((float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f,
-                        (float)EEPROM_readLong(ADDR_SPOOL_DIA2)/10000.0f);   //3 decimal places of percision is enough
+    //adjustSpoolDiameter((float)EEPROM_readLong(ADDR_SPOOL_DIA1)/10000.0f,(float)EEPROM_readLong(ADDR_SPOOL_DIA2)/10000.0f);   //3 decimal places of percision is enough
   } else {
     // Code should not get here if it does we should display some meaningful error message
     Serial.println(F("An Error Occurred during LoadConfig"));
@@ -979,7 +977,7 @@ static void processCommand() {
 
       float tps1=THREADPERSTEP1;
       float tps2=THREADPERSTEP2;
-      adjustSpoolDiameter(amountL,amountR);
+      //adjustSpoolDiameter(amountL,amountR);
       if(THREADPERSTEP1 != tps1 || THREADPERSTEP2 != tps2) {
         // Update EEPROM
         SaveSpoolDiameter();

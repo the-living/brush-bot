@@ -28,6 +28,13 @@
 //------------------------------------------------------------------------------
 // CONSTANTS
 //------------------------------------------------------------------------------
+//define serial communication protocol
+//serial comm bitrate
+#define BAUD  (57600)
+//serial input buffer size
+#define MAX_BUF (64)
+//timeout length
+#define TIMEOUT_OK  (1000)
 
 //define motor pins
 //based on RAMPS pinout
@@ -70,13 +77,7 @@ const int PEN_UP_ANGLE = 0; //Servo angle to disengage trigger
 const int PEN_DOWN_ANGLE = 10; //Servo angle to engage trigger
 const int PEN_DELAY = 250; //delay to allow servo movement, in ms
 
-//define serial communication protocol
-//serial comm bitrate
-const int BAUD = 57600;
-//serial input buffer size
-const int MAX_BUF = 64;
-//timeout length
-const int TIMEOUT_OK = 1000;
+
 
 //define geometry motions and resolution
 //for arc directions
@@ -574,7 +575,7 @@ void setup(){
   //initialize serial read buffer
   sofar = 0;
   Serial.begin( BAUD );
-  Serial.println( "HELLO WORLD! I AM BRUSHBOT");
+  Serial.println( F("\n\nHELLO WORLD! I AM BRUSHBOT"));
 
   //set stepper motor enable pins
   m1.setEnablePin( M1_ENABLE );
