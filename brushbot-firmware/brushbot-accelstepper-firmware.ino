@@ -97,6 +97,8 @@ static AccelStepper m2( AccelStepper::DRIVER, M2_STEP, M2_DIR );
 static AccelStepper m3( AccelStepper::DRIVER, M3_STEP, M3_DIR );
 static AccelStepper m4( AccelStepper::DRIVER, M4_STEP, M4_DIR );
 
+static int motor_speed = 200;
+
 //initialize Multistepper object
 // http://www.airspayce.com/mikem/arduino/AccelStepper/classMultiStepper.html
 static MultiStepper steppers;
@@ -429,11 +431,11 @@ static void processCommand() {
     }
 
     case 10: { //update motor max speed
-      MAX_SPEED = parsenumber( 'S', MAX_SPEED );
-      m1.setMaxSpeed( MAX_SPEED );
-      m2.setMaxSpeed( MAX_SPEED );
-      m3.setMaxSpeed( MAX_SPEED );
-      m4.setMaxSpeed( MAX_SPEED );
+      motor_speed = min( parsenumber( 'S', motor_speed ), MAX_SPEED);
+      m1.setMaxSpeed( motor_speed );
+      m2.setMaxSpeed( motor_speed );
+      m3.setMaxSpeed( motor_speed );
+      m4.setMaxSpeed( motor_speed );
       break;
     }
   }
@@ -560,10 +562,10 @@ void setup(){
   m4.setEnablePin( M4_ENABLE );
 
   // set stepper max speed
-  m1.setMaxSpeed( MAX_SPEED );
-  m2.setMaxSpeed( MAX_SPEED );
-  m3.setMaxSpeed( MAX_SPEED );
-  m4.setMaxSpeed( MAX_SPEED );
+  m1.setMaxSpeed( motor_speed );
+  m2.setMaxSpeed( motor_speed );
+  m3.setMaxSpeed( motor_speed );
+  m4.setMaxSpeed( motor_speed );
 
   // set stepper directions
   m1.setPinsInverted(M1_FORWARD, 0, 0) //direction inversion for M1
