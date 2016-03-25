@@ -82,7 +82,7 @@
 //define geometry motions and resolution
 //for arc directions
 #define ARC_CW      (1)
-#define ARC_CCW     (1)
+#define ARC_CCW     (-1)
 //arcs are constructed by subdivision into line segments
 //define length of segment for subdivision (in mm)
 #define MM_PER_SEGMENT  (2.0)
@@ -100,7 +100,7 @@ static AccelStepper m4( AccelStepper::DRIVER, M4_STEP, M4_DIR );
 
 static int motor_speed = 100; //steps per s
 static int motor_accel = 50;
-static int jog_dist = 10;
+static int jog_dist = 20;
 
 //initialize Multistepper object
 // http://www.airspayce.com/mikem/arduino/AccelStepper/classMultiStepper.html
@@ -190,7 +190,7 @@ static void adjustSpoolDiameter(float diameter1,float diameter2,float diameter3,
 // TRIGONOMETRIC FUNCTIONS
 //------------------------------------------------------------------------------
 
-static float atan3( float dx, float dy ){
+static float atan3( float dy, float dx ){
   //return angle of dy/dx as a value from 0 to 2PI
   float a = atan2( dy, dx );
   if ( a < 0 ) a = ( PI * 2.0 ) + a;
@@ -318,12 +318,13 @@ static void arc( float cx, float cy, float x, float y, float z, float dir ){
   float len = abs(theta) * radius;
 
   //subdivide arc into safe line segments
-  int segments = floor( len / MM_PER_SEGMENT );
+  int i, segments = floor( len / MM_PER_SEGMENT );
 
   float nx, ny, nz, angle3, scale;
-  for ( int i = 0; i < segments; i++ ){
+
+  for ( i = 0; i < segments; ++i ){
     //interpolate line segments around the arc
-    scale = (float)i / (float)segments;
+    scale = ((float)i / (float)segments);
 
     angle3 = ( theta * scale ) + angle1;
     nx = cx + cos(angle3) * radius;
@@ -493,23 +494,23 @@ static void processCommand() {
     case 0: disable_motors(); break; //disengage all steppers
     case 1: activate_motors(); break; //engage all steppers
 
-    case 10: m1.move(jog_dist); m1.run(); break; //jog M1 stepper forward
-    case 11: m1.move(-jog_dist); m1.run(); break; //jog M1 stepper backward
+    case 10: m1.move(jog_dist); m1.runToPosition(); break; //jog M1 stepper forward
+    case 11: m1.move(-jog_dist); m1.runToPosition(); break; //jog M1 stepper backward
     case 12: m1.disableOutputs(); break; //disengage M1 stepper
     case 13: m1.enableOutputs(); break; //engage M1 stepper
 
-    case 20: m2.move(jog_dist); m2.run(); break; //jog M2 stepper forward
-    case 21: m2.move(-jog_dist); m2.run(); break; //jog M2 stepper backward
+    case 20: m2.move(jog_dist); m2.runToPosition(); break; //jog M2 stepper forward
+    case 21: m2.move(-jog_dist); m2.runToPosition(); break; //jog M2 stepper backward
     case 22: m2.disableOutputs(); break; //disengage M2 stepper
     case 23: m2.enableOutputs(); break; //engage M2 stepper
 
-    case 30: m3.move(jog_dist); m3.run(); break; //jog M3 stepper forward
-    case 31: m3.move(-jog_dist); m3.run(); break; //jog M3 stepper backward
+    case 30: m3.move(jog_dist); m3.runToPosition(); break; //jog M3 stepper forward
+    case 31: m3.move(-jog_dist); m3.runToPosition(); break; //jog M3 stepper backward
     case 32: m3.disableOutputs(); break; //disengage M3 stepper
     case 33: m3.enableOutputs(); break; //engage M3 stepper
 
-    case 40: m4.move(jog_dist); m4.run(); break; //jog M4 stepper forward
-    case 41: m4.move(-jog_dist); m4.run(); break; //jog M4 stepper backward
+    case 40: m4.move(jog_dist); m4.runToPosition(); break; //jog M4 stepper forward
+    case 41: m4.move(-jog_dist); m4.runToPosition(); break; //jog M4 stepper backward
     case 42: m4.disableOutputs(); break; //disengage M4 stepper
     case 43: m4.enableOutputs(); break; //engage M4 stepper
 
