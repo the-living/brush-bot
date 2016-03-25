@@ -137,13 +137,13 @@ static float gondola_left = -45; //distance to left string attachments
 // set spool dimensions
 // and setup values for determining feed rate
 float SPOOL_DIAMETER1 = 30.0;
-
+float THREADPERSTEP1;
 float SPOOL_DIAMETER2 = 30.0;
-
+float THREADPERSTEP2;
 float SPOOL_DIAMETER3 = 30.0;
-
+float THREADPERSTEP3;
 float SPOOL_DIAMETER4 = 30.0;
-
+float THREADPERSTEP4;
 
 //plotter position
 static float posx, posy;
@@ -158,6 +158,27 @@ long line_number; //current line in multi-line GCODE
 //------------------------------------------------------------------------------
 // METHODS
 //------------------------------------------------------------------------------
+
+// MACHINE SETTING FUNCTIONS
+//------------------------------------------------------------------------------
+static void adjustSpoolDiameter(float diameter1,float diameter2,float diameter3,float diameter4) {
+  //update the spool diameters
+  SPOOL_DIAMETER1 = diameter1;
+  float SPOOL_CIRC = SPOOL_DIAMETER1*PI;  // circumference
+  THREADPERSTEP1 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
+
+  SPOOL_DIAMETER2 = diameter2;
+  SPOOL_CIRC = SPOOL_DIAMETER2*PI;  // circumference
+  THREADPERSTEP2 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
+
+  SPOOL_DIAMETER3 = diameter3;
+  SPOOL_CIRC = SPOOL_DIAMETER3*PI;  // circumference
+  THREADPERSTEP3 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step
+
+  SPOOL_DIAMETER4 = diameter4;
+  SPOOL_CIRC = SPOOL_DIAMETER4*PI;  // circumference
+  THREADPERSTEP4 = SPOOL_CIRC/STEPS_PER_TURN;  // thread per step]
+}
 
 
 // TRIGONOMETRIC FUNCTIONS
@@ -420,13 +441,13 @@ static void processCommand() {
     }
 
     case 5: { //update spool diameters
-      SPOOL_DIAMETER1 = parsenumber( 'S', SPOOL_DIAMETER1 );
-      SPOOL_DIAMETER2 = parsenumber( 'S', SPOOL_DIAMETER2 );
-      SPOOL_DIAMETER3 = parsenumber( 'S', SPOOL_DIAMETER3 );
-      SPOOL_DIAMETER4 = parsenumber( 'S', SPOOL_DIAMETER4 );
+      adjustSpoolDiameter(parsenumber( 'S', SPOOL_DIAMETER1 ),
+                          parsenumber( 'S', SPOOL_DIAMETER2 ),
+                          parsenumber( 'S', SPOOL_DIAMETER3 ),
+                          parsenumber( 'S', SPOOL_DIAMETER4 )
+                          );
 
       teleport( posx, posy ); //update motor positions
-
       break;
     }
 
@@ -502,11 +523,11 @@ static void processCommand() {
       //enable sprayer
       s1.write( PEN_DOWN_ANGLE );
 
-      arc( parsenumber( 'I', xpos ),
-           parsenumber( 'J', ypos ),
-           parsenumber( 'X', xpos ),
-           parsenumber( 'Y', ypos ),
-           parsenumber( 'Z', zpos ),
+      arc( parsenumber( 'I', posx ),
+           parsenumber( 'J', posy ),
+           parsenumber( 'X', posx ),
+           parsenumber( 'Y', posy ),
+           parsenumber( 'Z', posz ),
            ( cmd == 2 ) ? ARC_CCW : ARC_CW );
 
       //disable sprayer
@@ -568,10 +589,10 @@ void setup(){
   m4.setMaxSpeed( motor_speed );
 
   // set stepper directions
-  m1.setPinsInverted(M1_FORWARD, 0, 0) //direction inversion for M1
-  m2.setPinsInverted(M2_FORWARD, 0, 0) //direction inversion for M2
-  m3.setPinsInverted(M3_FORWARD, 0, 0) //direction inversion for M3
-  m4.setPinsInverted(M4_FORWARD, 0, 0) //direction inversion for M4
+  m1.setPinsInverted(M1_FORWARD, 0, 0); //direction inversion for M1
+  m2.setPinsInverted(M2_FORWARD, 0, 0); //direction inversion for M2
+  m3.setPinsInverted(M3_FORWARD, 0, 0); //direction inversion for M3
+  m4.setPinsInverted(M4_FORWARD, 0, 0); //direction inversion for M4
 
   // add individual steppers to MultiStepper object
   steppers.addStepper( m1 );
@@ -584,6 +605,7 @@ void setup(){
   s1.write( PEN_UP_ANGLE );
 
   //initialize plotter positions
+  adjustSpoolDiameter(SPOOL_DIAMETER1, SPOOL_DIAMETER2, SPOOL_DIAMETER3, SPOOL_DIAMETER4);
   teleport( 0, 0 );
 
   //LET'S GO!
