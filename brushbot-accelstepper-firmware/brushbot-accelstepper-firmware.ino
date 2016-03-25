@@ -30,62 +30,62 @@
 //------------------------------------------------------------------------------
 //define serial communication protocol
 //serial comm bitrate
-#define BAUD  (57600)
+#define BAUD          (57600)
 //serial input buffer size
-#define MAX_BUF (64)
+#define MAX_BUF       (64)
 //timeout length
-#define TIMEOUT_OK  (1000)
+#define TIMEOUT_OK    (1000)
 
 //define motor pins
 //based on RAMPS pinout
 //http://reprap.org/wiki/RAMPS_1.4#Firmware_and_Pin_Assignments
 
 //M1 - Top left
-const int M1_STEP = 54;  //M1 Stepping Signal
-const int M1_DIR = 55;  //M1 Direction Signal
-const int M1_ENABLE = 38; //M1 Engage Signal
+#define M1_STEP       (54)  //M1 Stepping Signal
+#define M1_DIR        (55)  //M1 Direction Signal
+#define M1_ENABLE     (38) //M1 Engage Signal
 
 //M2 - Top right
-const int M2_STEP = 60;  //M2 Stepping Signal
-const int M2_DIR = 61;  //M2 Direction Signal
-const int M2_ENABLE = 56; //M2 Engage Signal
+#define M2_STEP       (60)  //M2 Stepping Signal
+#define M2_DIR        (61)  //M2 Direction Signal
+#define M2_ENABLE     (56) //M2 Engage Signal
 //M3 - Bottom right
-const int M3_STEP = 26;  //M3 Stepping Signal
-const int M3_DIR = 28;  //M3 Direction Signal
-const int M3_ENABLE = 24; //M3 Engage Signal
+#define M3_STEP       (26)  //M3 Stepping Signal
+#define M3_DIR        (28)  //M3 Direction Signal
+#define M3_ENABLE     (24) //M3 Engage Signal
 //M4 - Bottom left
-const int M4_STEP = 36;  //M4 Stepping Signal
-const int M4_DIR = 34;  //M4 Direction Signal
-const int M4_ENABLE = 30; //M4 Engage Signal
+#define M4_STEP       (36)  //M4 Stepping Signal
+#define M4_DIR        (34)  //M4 Direction Signal
+#define M4_ENABLE     (30) //M4 Engage Signal
 
 //define motor specs
-const int STEPS_PER_TURN = 200; // Steps per full revolution
-const int MAX_SPEED = 200; // Steps per second
+#define STEPS_PER_TURN  (200) // Steps per full revolution
+#define MAX_SPEED     (200) // Steps per second
 
 //define forward motor direction
 // 0 == clockwise
 // 1 == counterclockwise
-const int M1_FORWARD = 0; //M1 Forward Direction
-const int M2_FORWARD = 1; //M2 Forward Direction
-const int M3_FORWARD = 0; //M3 Forward Direction
-const int M4_FORWARD = 1; //M4 Forward Direction
+#define M1_FORWARD    (0) //M1 Forward Direction
+#define M2_FORWARD    (1) //M2 Forward Direction
+#define M3_FORWARD    (0) //M3 Forward Direction
+#define M4_FORWARD    (1) //M4 Forward Direction
 
 
 //define servo pins
-const int SERVO_PIN = 11;
-const int PEN_UP_ANGLE = 0; //Servo angle to disengage trigger
-const int PEN_DOWN_ANGLE = 10; //Servo angle to engage trigger
-const int PEN_DELAY = 250; //delay to allow servo movement, in ms
+#define SERVO_PIN     (11)
+#define PEN_UP_ANGLE  (0) //Servo angle to disengage trigger
+#define PEN_DOWN_ANGLE  (10) //Servo angle to engage trigger
+#define PEN_DELAY     (250) //delay to allow servo movement, in ms
 
 
 
 //define geometry motions and resolution
 //for arc directions
-const int ARC_CW = 1;
-const int ARC_CCW = -1;
+#define ARC_CW      (1)
+#define ARC_CCW     (1)
 //arcs are constructed by subdivision into line segments
 //define length of segment for subdivision (in mm)
-const float MM_PER_SEGMENT = 2;
+#define MM_PER_SEGMENT  (2.0)
 
 //------------------------------------------------------------------------------
 // VARIABLES
@@ -559,6 +559,9 @@ void Serial_listen() {
     if( sofar < MAX_BUF ) buffer[ sofar++ ] = c;
     if( c == '\n' || c == '\r') {
       buffer[sofar] = 0;
+
+      //echo command
+      //Serial.println(buffer);
 
       processCommand();
       ready();
