@@ -183,6 +183,22 @@ void setupControls(){
   .setFont(fontM)
   .setText("SET ORIGIN (0,0)")
   ;
+  
+  //TEST PATTERN
+  //---------------------------------------------------------------------------
+
+  //Send teleport signal
+  cP5.addBang("test_pattern")
+  .setPosition(600, 500)
+  .setSize(200, 45)
+  .setTriggerEvent(Bang.RELEASE)
+  //caption settings
+  .getCaptionLabel()
+  .align(ControlP5.CENTER, ControlP5.CENTER)
+  .setColor(255)
+  .setFont(fontM)
+  .setText("RUN TEST PATTERN")
+  ;
 
   //AXIAL MOVE COMMANDS
   //---------------------------------------------------------------------------

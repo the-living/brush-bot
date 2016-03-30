@@ -29,6 +29,37 @@ void controlEvent( ControlEvent theEvent ) {
       posy = 0;
     }
 
+    //RUN TEST PATTERN
+    //--------------------------------------------------------------------------
+    if ( theEvent.getName().equals("test_pattern") ) {
+
+      //generate spiral test pattern
+
+      int factor = 10;
+      int x = 0;
+      int y = 0;
+
+      for (int i = 0; i < 80; i++) {
+        if (i%2 == 0) {
+          //flip sign
+          x *= -1;
+        } else {
+          y *= -1;
+        }
+
+        if (i%4 == 0) {
+          //add factor
+          x += factor;
+        }
+        if ((i-1)%4 == 0) {
+          y -= factor;
+        }
+
+        String cmd = gcodeLine(x, y, true);
+        GB.write( cmd );
+      }
+    }
+
 
 
     // JOGGING
@@ -171,6 +202,6 @@ void controlEvent( ControlEvent theEvent ) {
       String cmd = gcodeLine(posx, posy, false);
       GB.write( cmd );
     }
-
   }
 }
+
