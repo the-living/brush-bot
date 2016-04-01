@@ -212,10 +212,10 @@ static void IK(float x, float y, long &l1, long &l2, long &l3, long &l4){
   //IK - turns xy coordinates into lengths L1, L2, L3, L4
 
   //find offset distance in all four directions (up, down, left, right)
-  float dy_up = y - limit_top - gondola_top;
-  float dy_dn = y - limit_bottom - gondola_bottom;
-  float dx_r = x - limit_right - gondola_right;
-  float dx_l = x - limit_left - gondola_left;
+  float dy_up = limit_top - gondola_top - y;
+  float dy_dn = limit_bottom - gondola_bottom - y;
+  float dx_r = limit_right - gondola_right - x;
+  float dx_l = limit_left - gondola_left - x;
 
   //find length to M1, M2, M3, M4
   l1 = floor( stringLength(dx_l, dy_up, SPOOL_DIAMETER1) / THREADPERSTEP1 );
