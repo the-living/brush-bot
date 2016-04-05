@@ -59,7 +59,7 @@
 #define M4_ENABLE     (30) //M4 Engage Signal
 
 //define motor specs
-#define STEPS_PER_TURN  (200) // Steps per full revolution
+#define STEPS_PER_TURN  (400) // Steps per full revolution
 #define MAX_SPEED     (200) // Steps per second
 
 //define forward motor direction
@@ -85,7 +85,7 @@
 #define ARC_CCW     (-1)
 //arcs are constructed by subdivision into line segments
 //define length of segment for subdivision (in mm)
-#define MM_PER_SEGMENT  (2.0)
+#define MM_PER_SEGMENT  (5.0)
 
 //------------------------------------------------------------------------------
 // VARIABLES
@@ -114,8 +114,8 @@ static Servo s1;
 // all distances are measured relative to the calibration point of the plotter
 // (normally, this is located in the center of the drawing)
 // measurement is in millimeters
-static float limit_top = 585; //distance to top motor axle centers
-static float limit_bottom = -585; //distance to bottom motor axle centers
+static float limit_top = 587; //distance to top motor axle centers
+static float limit_bottom = -587; //distance to bottom motor axle centers
 static float limit_right = 570; //distance to right motor axle centers
 static float limit_left = -570; //distance to left motor axle centers
 
@@ -139,13 +139,13 @@ static float gondola_left = -45; //distance to left string attachments
 
 // set spool dimensions
 // and setup values for determining feed rate
-float SPOOL_DIAMETER1 = 30.0;
+float SPOOL_DIAMETER1 = 27.75;
 float THREADPERSTEP1;
-float SPOOL_DIAMETER2 = 30.0;
+float SPOOL_DIAMETER2 = 23.9;
 float THREADPERSTEP2;
-float SPOOL_DIAMETER3 = 30.0;
+float SPOOL_DIAMETER3 = 25.0;
 float THREADPERSTEP3;
-float SPOOL_DIAMETER4 = 30.0;
+float SPOOL_DIAMETER4 = 24.5;
 float THREADPERSTEP4;
 
 //plotter position
