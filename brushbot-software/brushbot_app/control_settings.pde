@@ -84,28 +84,56 @@ void setupControls(){
   //Send jog forward signal to all selected motors
   cP5.addBang("jog_forward")
   .setPosition(600, 50)
-  .setSize(200, 45)
+  .setSize(95, 45)
   .setTriggerEvent(Bang.RELEASE)
   //caption settings
   .getCaptionLabel()
   .align(ControlP5.CENTER, ControlP5.CENTER)
   .setColor(255)
   .setFont(fontM)
-  .setText("FORWARD")
+  .setText("F")
   ;
 
   //JOG BACKWARD BUTTON
   //Send jog backward signal to all selected motors
   cP5.addBang("jog_backward")
   .setPosition(600, 100)
-  .setSize(200, 45)
+  .setSize(95, 45)
   .setTriggerEvent(Bang.RELEASE)
   //caption settings
   .getCaptionLabel()
   .align(ControlP5.CENTER, ControlP5.CENTER)
   .setColor(255)
   .setFont(fontM)
-  .setText("BACKWARD")
+  .setText("RW")
+  ;
+  
+  //JOG FORWARD BUTTON
+  //Send jog forward signal to all selected motors
+  cP5.addBang("jog_forward_ff")
+  .setPosition(700, 50)
+  .setSize(95, 45)
+  .setTriggerEvent(Bang.RELEASE)
+  //caption settings
+  .getCaptionLabel()
+  .align(ControlP5.CENTER, ControlP5.CENTER)
+  .setColor(255)
+  .setFont(fontM)
+  .setText("FF")
+  ;
+
+  //JOG BACKWARD BUTTON
+  //Send jog backward signal to all selected motors
+  cP5.addBang("jog_backward_ff")
+  .setPosition(700, 100)
+  .setSize(95, 45)
+  .setTriggerEvent(Bang.RELEASE)
+  //caption settings
+  .getCaptionLabel()
+  .align(ControlP5.CENTER, ControlP5.CENTER)
+  .setColor(255)
+  .setFont(fontM)
+  .setText("FRW")
   ;
 
   //MOTOR ENABLE/DISABLE
@@ -166,6 +194,22 @@ void setupControls(){
   .setColor(255)
   .setFont(fontS)
   .setText("SPRAY ON")
+  ;
+
+  //INITIAL SPOOL UP
+  //---------------------------------------------------------------------------
+
+  //Send teleport signal
+  cP5.addBang("spool_up")
+  .setPosition(600, 400)
+  .setSize(200, 45)
+  .setTriggerEvent(Bang.RELEASE)
+  //caption settings
+  .getCaptionLabel()
+  .align(ControlP5.CENTER, ControlP5.CENTER)
+  .setColor(255)
+  .setFont(fontM)
+  .setText("SPOOL UP")
   ;
 
   //TELEPORT

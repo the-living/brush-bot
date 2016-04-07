@@ -27,23 +27,23 @@ String gcodeAllOn(){
 }
 
 //M10-M20-M30-M40 FORWARD JOG MOTOR
-String gcodeMotorForward( int motor ){
+String gcodeMotorForward( int motor, int dist ){
   switch( motor ){
-    case 1: return "M10"; //Motor 1
-    case 2: return "M20"; //Motor 2
-    case 3: return "M30"; //Motor 3
-    case 4: return "M40"; //Motor 4
+    case 1: return "M10 S" + dist; //Motor 1
+    case 2: return "M20 S" + dist; //Motor 2
+    case 3: return "M30 S" + dist; //Motor 3
+    case 4: return "M40 S" + dist; //Motor 4
     default: return "";
   }
 }
 
 //M11-M21-M31-M41 BACKWARD JOG MOTOR
-String gcodeMotorBackward( int motor ){
+String gcodeMotorBackward( int motor, int dist ){
   switch( motor ){
-    case 1: return "M11"; //Motor 1
-    case 2: return "M21"; //Motor 2
-    case 3: return "M31"; //Motor 3
-    case 4: return "M41"; //Motor 4
+    case 1: return "M11 S" + dist; //Motor 1
+    case 2: return "M21 S" + dist; //Motor 2
+    case 3: return "M31 S" + dist; //Motor 3
+    case 4: return "M41 S" + dist; //Motor 4
     default: return "";
   }
 }

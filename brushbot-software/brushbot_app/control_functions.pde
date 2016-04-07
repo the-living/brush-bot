@@ -74,7 +74,7 @@ void controlEvent( ControlEvent theEvent ) {
 
       for ( int i = 0; i < motors.length; i++ ) {
         if ( motors[i] ) {
-          String cmd = gcodeMotorForward( i + 1 );
+          String cmd = gcodeMotorForward( i + 1, 1 );
           GB.write( cmd );
         }
       }
@@ -90,7 +90,39 @@ void controlEvent( ControlEvent theEvent ) {
 
       for ( int i = 0; i < motors.length; i++ ) {
         if ( motors[i] ) {
-          String cmd = gcodeMotorBackward( i + 1 );
+          String cmd = gcodeMotorBackward( i + 1, 1 );
+          GB.write( cmd );
+        }
+      }
+    }
+    
+    //FORWARD JOG
+    if ( theEvent.getName().equals("jog_forward_ff") ) {
+      //update motor selection array
+      motors[0] = cP5.get( Toggle.class, "m1").getState();
+      motors[1] = cP5.get( Toggle.class, "m2").getState();
+      motors[2] = cP5.get( Toggle.class, "m3").getState();
+      motors[3] = cP5.get( Toggle.class, "m4").getState();
+
+      for ( int i = 0; i < motors.length; i++ ) {
+        if ( motors[i] ) {
+          String cmd = gcodeMotorForward( i + 1, 5 );
+          GB.write( cmd );
+        }
+      }
+    }
+
+    //BACKWARD JOG
+    if ( theEvent.getName().equals("jog_backward_ff") ) {
+      //update motor selection array
+      motors[0] = cP5.get( Toggle.class, "m1").getState();
+      motors[1] = cP5.get( Toggle.class, "m2").getState();
+      motors[2] = cP5.get( Toggle.class, "m3").getState();
+      motors[3] = cP5.get( Toggle.class, "m4").getState();
+
+      for ( int i = 0; i < motors.length; i++ ) {
+        if ( motors[i] ) {
+          String cmd = gcodeMotorBackward( i + 1, 5 );
           GB.write( cmd );
         }
       }
