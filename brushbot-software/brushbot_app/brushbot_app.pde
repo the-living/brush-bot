@@ -145,7 +145,7 @@ void serialRun() {
 
     //Arduino firmware signals readiness with a ">"
     if (val.equals("\n> ") ) {
-      println( val );
+      //println( val );
       //Check if the GCodeBuffer contains commands
       if ( GB.size() > 0 ) {
         String s = GB.sendNext();
