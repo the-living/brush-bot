@@ -59,7 +59,7 @@
 #define M4_ENABLE     13 //M4 Engage Signal
 
 //define motor specs
-#define STEPS_PER_TURN  (1600) // Steps per full revolution
+#define STEPS_PER_TURN  (3200) // Steps per full revolution
 #define MAX_SPEED     (2000) // Steps per second
 
 //define forward motor direction
@@ -83,7 +83,7 @@
 #define ARC_CCW     (-1)
 //arcs are constructed by subdivision into line segments
 //define length of segment for subdivision (in mm)
-#define MM_PER_SEGMENT  (5.0)
+#define MM_PER_SEGMENT  (0.5)
 
 //------------------------------------------------------------------------------
 // VARIABLES
@@ -96,7 +96,7 @@ static AccelStepper m2( 1, M2_STEP, M2_DIR );
 static AccelStepper m3( 1, M3_STEP, M3_DIR );
 static AccelStepper m4( 1, M4_STEP, M4_DIR );
 
-static int motor_speed = 400; //steps per s
+static int motor_speed = 800; //steps per s
 static int motor_accel = 1000;
 static int jog_dist = 100;
 static int spoolup_dist = 1000;
@@ -114,15 +114,10 @@ static Servo s1;
 // (normally, this is located in the center of the drawing)
 // measurement is in millimeters
 
-static float limit_top = 582.5; //distance to top motor axle centers
-static float limit_bottom = -582.5; //distance to bottom motor axle centers
-static float limit_right = 565; //distance to right motor axle centers
-static float limit_left = -565; //distance to left motor axle centers
-
-//static float limit_top = 616; //distance to top motor axle centers
-//static float limit_bottom = -616; //distance to bottom motor axle centers
-//static float limit_right = 600; //distance to right motor axle centers
-//static float limit_left = -600; //distance to left motor axle centers
+static float limit_top = 1170.0; //distance to top motor axle centers
+static float limit_bottom = -1170.0; //distance to bottom motor axle centers
+static float limit_right = 1957.5; //distance to right motor axle centers
+static float limit_left = -1957.5; //distance to left motor axle centers
 
 // margin dimensions
 // safe area inset from plotter extents
@@ -153,11 +148,11 @@ float THREADPERSTEP3;
 float SPOOL_DIAMETER4;
 float THREADPERSTEP4;
 
-float initStringLength = 744.0; //initial string length out
-float Ro = 9.95; //spool starting dia
-float t = 0.186; //ribbon thickness
+float initStringLength = 2214; //initial string length out
+float Do = 25.5; //spool starting dia
+float t = 0.43; //ribbon thickness
 float pi = 3.14159265359;
-float Lo = 1645; //full ribbon length
+float Lo = 4933; //full ribbon length
 
 //plotter position
 static float posx, posy;
@@ -165,6 +160,8 @@ static float posz; //pen state
 
 //motor position
 static long laststep1, laststep2, laststep3, laststep4;
+static long init_1, init_2, init_3, init_4;
+static float rot_scalar = 50000.0;
 
 //serial communication reception
 static char buffer[ MAX_BUF + 1 ]; // Serial buffer
@@ -195,6 +192,17 @@ static void adjustSpoolDiameter(float diameter1, float diameter2, float diameter
   SPOOL_DIAMETER4 = diameter4;
   SPOOL_CIRC = SPOOL_DIAMETER4 * PI; // circumference
   THREADPERSTEP4 = SPOOL_CIRC / STEPS_PER_TURN; // thread per step]
+  
+  //DEBUG SPOOL DIAMETER
+  //Serial.print( "SPOOL D // 1: " );
+  //Serial.print( SPOOL_DIAMETER1 );
+  //Serial.print( " / 2: " );
+  //Serial.print( SPOOL_DIAMETER2 );
+  //Serial.print( " / 3: " );
+  //Serial.print( SPOOL_DIAMETER3 );
+  //Serial.print( " / 4: " );
+  //Serial.println( SPOOL_DIAMETER4 );
+  
 }
 
 
@@ -217,12 +225,15 @@ static float stringLength( float dx, float dy, float spool) {
 
 //http://mathcentral.uregina.ca/QQ/database/QQ.09.99/bolin1.html
 //http://math.stackexchange.com/questions/370909/accounting-for-changing-radius-of-a-paper-roll-to-always-unroll-the-same-amount
+//http://www.giangrandi.ch/soft/spiral/spiral.shtml
 static float getSpoolDiameter(float Lout) {
   float L = Lo - Lout; //ribbon left on spool
 //  float R = sqrt((t * L) / pi + Ro * Ro); //radius of spooled ribbon
-  float n = ((-2 * pi * Ro) - (pi * t) + sqrt(pow((2 * pi * Ro),2) + (4 * pi * t * L))) / (2 * pi * t);
-  float dia = (Ro + n * t) * 2;
-  Serial.println(dia);
+//  float n = ((-2 * pi * Ro) - (pi * t) + sqrt(pow((2 * pi * Ro),2) + (4 * pi * t * L))) / (2 * pi * t);
+  float N = (t - Do + sqrt(pow((Do - t), 2) + ((4 * t * L) / pi))) / (2 * t);
+//  float dia = (Ro + n * t) * 2;
+  float dia = (2 * N * t) + Do;
+//  Serial.println(dia);
   return dia;
 }
 
@@ -250,12 +261,39 @@ static void IK(float x, float y, long &l1, long &l2, long &l3, long &l4) {
   l3 = floor( len3 / THREADPERSTEP3 );
   l4 = floor( len4 / THREADPERSTEP4 );
   
-  float d1 = getSpoolDiameter(len1);
-  float d2 = getSpoolDiameter(len2);
-  float d3 = getSpoolDiameter(len3);
-  float d4 = getSpoolDiameter(len4);
+  //apply scalar to position
+  l1 = scaleStep( l1, init_1 );
+  l2 = scaleStep( l2, init_2 );
+  l3 = scaleStep( l3, init_3 );
+  l4 = scaleStep( l4, init_4 );
+  
+  //float d1 = getSpoolDiameter(len1);
+  //float d2 = getSpoolDiameter(len2);
+  //float d3 = getSpoolDiameter(len3);
+  //float d4 = getSpoolDiameter(len4);
 
-  adjustSpoolDiameter(d1, d2, d3, d4);
+  //adjustSpoolDiameter(d1, d2, d3, d4);
+  
+  //DEBUG
+  //Serial.print( "L1: " );
+  //Serial.print( len1 );
+  //Serial.print( "| L2: ");
+  //Serial.print( len2 );
+  //Serial.print( "| L3: ");
+  //Serial.print( len3 );
+  //Serial.print( "| L4: " );
+  //Serial.println( len4 );
+}
+
+static long scaleStep( long L, long L_init ){
+  long delta_l = L - L_init;
+  float scale_val = 1 + (delta_l) / (rot_scalar);
+  Serial.print( "Scalar: " );
+  Serial.println( scale_val );
+  //Serial.print( "Delta: " );
+  //Serial.println( delta_l );
+  
+  return L * scale_val;
 }
 
 
@@ -292,6 +330,9 @@ static void line( float x, float y, float z) {
   laststep2 = positions[1];
   laststep3 = positions[2];
   laststep4 = positions[3];
+  
+  //DEBUG
+  positionReport();
 }
 
 static void line_safe( float x, float y, float z ) {
@@ -382,18 +423,34 @@ static void teleport( float x, float y ) {
   //calculate stepper positions from coordinates
   long L1, L2, L3, L4;
   IK( posx, posy, L1, L2, L3, L4);
-
+  
   //update stepper positions
-  laststep1 = L1;
-  laststep2 = L2;
-  laststep3 = L3;
-  laststep4 = L4;
+  //laststep1 = L1;
+  //laststep2 = L2;
+  //laststep3 = L3;
+  //laststep4 = L4;
 
   m1.setCurrentPosition(L1);
   m2.setCurrentPosition(L2);
   m3.setCurrentPosition(L3);
   m4.setCurrentPosition(L4);
+  
+  //DEBUG
+  positionReport();
 
+}
+
+void positionReport(){
+  //DEBUG
+  //Report motor positions
+  Serial.print( "M1: " );
+  Serial.print( m1.currentPosition() );
+  Serial.print( " / M2: " );
+  Serial.print( m2.currentPosition() );
+  Serial.print( " / M3: " );
+  Serial.print( m3.currentPosition() );
+  Serial.print( " / M4: " );
+  Serial.println( m4.currentPosition() );
 }
 
 void disable_motors() {
@@ -522,7 +579,7 @@ static void processCommand() {
       
     case 20: { //update motor max speed
         initStringLength = parsenumber( 'S', initStringLength );
-        Ro = parsenumber( 'R', Ro );
+        Do = parsenumber( 'R', Do );
         t = parsenumber( 'T', t );
         Lo = parsenumber( 'L', Lo );
         break;
@@ -728,10 +785,20 @@ void setup() {
   s1.write( PEN_UP_ANGLE );
 
   //initialize plotter positions
-  float init_dia = getSpoolDiameter(initStringLength);
+  //float init_dia = getSpoolDiameter(initStringLength);
+  float init_dia = 46.44; //disabled dynamic spool diameter
   adjustSpoolDiameter(init_dia, init_dia, init_dia, init_dia);
+  
+  //DEBUG Set Initial Spool Positions
+  init_1 = 48664;
+  init_2 = 48664;
+  init_3 = 48664;
+  init_4 = 48664;
+  
   teleport( 0, 0 );
-
+  
+  
+    
   //LET'S GO!
   Serial.println( "AND I AM READY TO DRAW");
   ready();
