@@ -83,7 +83,7 @@
 #define ARC_CCW     (-1)
 //arcs are constructed by subdivision into line segments
 //define length of segment for subdivision (in mm)
-#define MM_PER_SEGMENT  (0.5)
+#define MM_PER_SEGMENT  (1.0)
 
 //------------------------------------------------------------------------------
 // VARIABLES
@@ -148,11 +148,11 @@ float THREADPERSTEP3;
 float SPOOL_DIAMETER4;
 float THREADPERSTEP4;
 
-float initStringLength = 2214; //initial string length out
-float Do = 25.5; //spool starting dia
+float initStringLength = 2218.723964; //initial string length out
+float Do = 46.2; //spool starting dia
 float t = 0.43; //ribbon thickness
 float pi = 3.14159265359;
-float Lo = 4933; //full ribbon length
+//float Lo = 4933; //full ribbon length
 
 //plotter position
 static float posx, posy;
@@ -226,15 +226,30 @@ static float stringLength( float dx, float dy, float spool) {
 //http://mathcentral.uregina.ca/QQ/database/QQ.09.99/bolin1.html
 //http://math.stackexchange.com/questions/370909/accounting-for-changing-radius-of-a-paper-roll-to-always-unroll-the-same-amount
 //http://www.giangrandi.ch/soft/spiral/spiral.shtml
-static float getSpoolDiameter(float Lout) {
-  float L = Lo - Lout; //ribbon left on spool
+//static float getSpoolDiameter(float Lout) {
+  //float L = Lo - Lout; //ribbon left on spool
 //  float R = sqrt((t * L) / pi + Ro * Ro); //radius of spooled ribbon
 //  float n = ((-2 * pi * Ro) - (pi * t) + sqrt(pow((2 * pi * Ro),2) + (4 * pi * t * L))) / (2 * pi * t);
-  float N = (t - Do + sqrt(pow((Do - t), 2) + ((4 * t * L) / pi))) / (2 * t);
+  //float N = (t - Do + sqrt(pow((Do - t), 2) + ((4 * t * L) / pi))) / (2 * t);
 //  float dia = (Ro + n * t) * 2;
-  float dia = (2 * N * t) + Do;
+  //float dia = (2 * N * t) + Do;
 //  Serial.println(dia);
-  return dia;
+  //return dia;
+//}
+
+static long getSpoolSteps(float d_L) {
+  //int dir = 1;
+  //if(d_L <= 0){
+    //dir *= -1;
+  //
+//  float R = sqrt((t * L) / pi + Ro * Ro); //radius of spooled ribbon
+//  float n = ((-2 * pi * Ro) - (pi * t) + sqrt(pow((2 * pi * Ro),2) + (4 * pi * t * L))) / (2 * pi * t);
+  //float N = (t - Do + sqrt( pow((Do - t), 2) + ((4 * t * abs(d_L)) / pi))) / (2 * t);
+  //Serial.print("REV: ");
+  //Serial.println( N * dir );
+  //Serial.print("DIAM: ");
+  //Serial.println( 2*N*dir*t + Do );
+  return floor(0.0016*d_L*d_L + 22.049*d_L);
 }
 
 
@@ -250,22 +265,37 @@ static void IK(float x, float y, long &l1, long &l2, long &l3, long &l4) {
   float dx_r = limit_right - gondola_right - x;
   float dx_l = limit_left - gondola_left - x;
 
-  float len1 = stringLength(dx_l, dy_up, SPOOL_DIAMETER1);
-  float len2 = stringLength(dx_r, dy_up, SPOOL_DIAMETER2);
-  float len3 = stringLength(dx_r, dy_dn, SPOOL_DIAMETER3);
-  float len4 = stringLength(dx_l, dy_dn, SPOOL_DIAMETER4);
+  //float len1 = stringLength(dx_l, dy_up, SPOOL_DIAMETER1);
+  //float len2 = stringLength(dx_r, dy_up, SPOOL_DIAMETER2);
+  //float len3 = stringLength(dx_r, dy_dn, SPOOL_DIAMETER3);
+  //float len4 = stringLength(dx_l, dy_dn, SPOOL_DIAMETER4);
 
-  //find length to M1, M2, M3, M4
-  l1 = floor( len1 / THREADPERSTEP1 );
-  l2 = floor( len2 / THREADPERSTEP2 );
-  l3 = floor( len3 / THREADPERSTEP3 );
-  l4 = floor( len4 / THREADPERSTEP4 );
+  float len1 = stringLength(dx_l, dy_up, SPOOL_DIAMETER1) - initStringLength;
+  float len2 = stringLength(dx_r, dy_up, SPOOL_DIAMETER2) - initStringLength;
+  float len3 = stringLength(dx_r, dy_dn, SPOOL_DIAMETER3) - initStringLength;
+  float len4 = stringLength(dx_l, dy_dn, SPOOL_DIAMETER4) - initStringLength;
+
+  //Serial.print( "L1: " );
+  //Serial.println( len1 + initStringLength );
+  //Serial.print( "L2: " );
+  //Serial.println( len2 + initStringLength );
+  //Serial.print( "L3: " );
+  //Serial.println( len3 + initStringLength );
+  //Serial.print( "L4: " );
+  //Serial.println( len4 + initStringLength );
+
+  //convert length to step position
+  l1 = getSpoolSteps(len1);
+  l2 = getSpoolSteps(len2);
+  l3 = getSpoolSteps(len3);
+  l4 = getSpoolSteps(len4);
   
-  //apply scalar to position
-  l1 = scaleStep( l1, init_1 );
-  l2 = scaleStep( l2, init_2 );
-  l3 = scaleStep( l3, init_3 );
-  l4 = scaleStep( l4, init_4 );
+  //find length to M1, M2, M3, M4
+  //l1 = floor( len1 / THREADPERSTEP1 );
+  //l2 = floor( len2 / THREADPERSTEP2 );
+  //l3 = floor( len3 / THREADPERSTEP3 );
+  //l4 = floor( len4 / THREADPERSTEP4 );
+  
   
   //float d1 = getSpoolDiameter(len1);
   //float d2 = getSpoolDiameter(len2);
@@ -285,15 +315,15 @@ static void IK(float x, float y, long &l1, long &l2, long &l3, long &l4) {
   //Serial.println( len4 );
 }
 
-static long scaleStep( long L, long L_init ){
-  long delta_l = L - L_init;
-  float scale_val = 1 + (delta_l) / (rot_scalar);
-  Serial.print( "Scalar: " );
-  Serial.println( scale_val );
-  //Serial.print( "Delta: " );
-  //Serial.println( delta_l );
-  
-  return L * scale_val;
+static void initIK() {
+  //IK - turns xy coordinates into lengths L1, L2, L3, L4
+
+  //find offset distance in all four directions (up, down, left, right)
+  float dy_up = limit_top - gondola_top;
+  float dx_l = limit_left - gondola_left;
+
+  initStringLength = stringLength(dx_l, dy_up, SPOOL_DIAMETER1);
+
 }
 
 
@@ -317,7 +347,7 @@ static void line( float x, float y, float z) {
 
   long positions[4]; //array of desired string lengths
   IK( x, y, positions[0], positions[1], positions[2], positions[3] );
-
+  
   steppers.moveTo( positions ); //set positions for each motor
 
   steppers.runSpeedToPosition(); //Blocks until all steppers are in position
@@ -332,7 +362,7 @@ static void line( float x, float y, float z) {
   laststep4 = positions[3];
   
   //DEBUG
-  positionReport();
+  //positionReport();
 }
 
 static void line_safe( float x, float y, float z ) {
@@ -417,8 +447,8 @@ static void arc( float cx, float cy, float x, float y, float z, float dir ) {
 static void teleport( float x, float y ) {
   //Position reset method (no movement)
 
-  posx = x;
-  posy = y;
+  posx = 0;
+  posy = 0;
 
   //calculate stepper positions from coordinates
   long L1, L2, L3, L4;
@@ -552,6 +582,18 @@ static void processCommand() {
         limit_right = parsenumber( 'R', limit_right );
         limit_left = parsenumber( 'L', limit_left );
 
+        Serial.print( "T:" );
+        Serial.print( limit_top );
+        
+        Serial.print( "B:" );
+        Serial.print( limit_bottom );
+        
+        Serial.print( "R:" );
+        Serial.print( limit_right );
+        
+        Serial.print( "L:" );
+        Serial.println( limit_left );
+
         teleport( posx, posy ); //update motor positions
 
         break;
@@ -574,6 +616,8 @@ static void processCommand() {
         m2.setMaxSpeed( motor_speed );
         m3.setMaxSpeed( motor_speed );
         m4.setMaxSpeed( motor_speed );
+        Serial.print( "SPEED: " );
+        Serial.println( motor_speed );
         break;
       }
       
@@ -581,10 +625,20 @@ static void processCommand() {
         initStringLength = parsenumber( 'S', initStringLength );
         Do = parsenumber( 'R', Do );
         t = parsenumber( 'T', t );
-        Lo = parsenumber( 'L', Lo );
+        //Lo = parsenumber( 'L', Lo );
+        Serial.print( "INIT_LEN: " );
+        Serial.println( initStringLength );
+        Serial.print( "DIAM: " );
+        Serial.println( Do );
+        Serial.print( "THICK: " );
+        Serial.println( t );
         break;
       }
-    
+
+    case 30: { //report position
+        positionReport();
+        break;
+      }
   }
 
 
@@ -785,15 +839,19 @@ void setup() {
   s1.write( PEN_UP_ANGLE );
 
   //initialize plotter positions
-  //float init_dia = getSpoolDiameter(initStringLength);
-  float init_dia = 46.44; //disabled dynamic spool diameter
-  adjustSpoolDiameter(init_dia, init_dia, init_dia, init_dia);
+  adjustSpoolDiameter(Do, Do, Do, Do);
+  Serial.print( "SPOOL1: ");
+  Serial.println( SPOOL_DIAMETER1 );
+  Serial.print( "SPOOL2: ");
+  Serial.println( SPOOL_DIAMETER2 );
+  Serial.print( "SPOOL3: " );
+  Serial.println( SPOOL_DIAMETER3 );
+  Serial.print( "SPOOL4: " );
+  Serial.println( SPOOL_DIAMETER4 );
+
+  initIK();
   
-  //DEBUG Set Initial Spool Positions
-  init_1 = 48664;
-  init_2 = 48664;
-  init_3 = 48664;
-  init_4 = 48664;
+  positionReport();
   
   teleport( 0, 0 );
   
