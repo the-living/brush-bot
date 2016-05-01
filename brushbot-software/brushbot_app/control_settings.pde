@@ -231,7 +231,7 @@ void setupControls(){
   //TEST PATTERN
   //---------------------------------------------------------------------------
 
-  //Send teleport signal
+  //Send test pattern signal
   cP5.addBang("test_pattern")
   .setPosition(600, 500)
   .setSize(200, 45)
