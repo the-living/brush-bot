@@ -140,7 +140,7 @@ void setupControls(){
   //---------------------------------------------------------------------------
   //DISABLE BUTTON
   //Send disengage signal to all selected motors
-  cP5.addBang("disable")
+  cP5.addBang("step_f")
   .setPosition(600, 200)
   .setSize(98, 50)
   .setTriggerEvent(Bang.RELEASE)
@@ -149,12 +149,12 @@ void setupControls(){
   .align(ControlP5.CENTER, ControlP5.CENTER)
   .setColor(255)
   .setFont(fontS)
-  .setText("MOTOR OFF")
+  .setText("STEP+")
   ;
 
   //ENABLE BUTTON
   //Send engage signal to all selected motors
-  cP5.addBang("enable")
+  cP5.addBang("step_b")
   .setPosition(702, 200)
   .setSize(98, 50)
   .setTriggerEvent(Bang.RELEASE)
@@ -163,7 +163,7 @@ void setupControls(){
   .align(ControlP5.CENTER, ControlP5.CENTER)
   .setColor(255)
   .setFont(fontS)
-  .setText("MOTOR ON")
+  .setText("STEP-")
   ;
 
   //SPRAYER ENABLE/DISABLE
@@ -200,16 +200,15 @@ void setupControls(){
   //---------------------------------------------------------------------------
 
   //Send teleport signal
-  cP5.addBang("spool_up")
+  cP5.addToggle("fast_mode")
   .setPosition(600, 400)
   .setSize(200, 45)
-  .setTriggerEvent(Bang.RELEASE)
   //caption settings
   .getCaptionLabel()
   .align(ControlP5.CENTER, ControlP5.CENTER)
-  .setColor(255)
+  .setColor(0)
   .setFont(fontM)
-  .setText("SPOOL UP")
+  .setText("FAST MODE")
   ;
 
   //TELEPORT
@@ -247,6 +246,19 @@ void setupControls(){
   //AXIAL MOVE COMMANDS
   //---------------------------------------------------------------------------
 
+  //GO HOME
+  cP5.addBang("go_home")
+  .setPosition(250,250)
+  .setSize(100,100)
+  .setTriggerEvent(Bang.RELEASE)
+  //caption settings
+  .getCaptionLabel()
+  .align(ControlP5.CENTER, ControlP5.CENTER)
+  .setColor(255)
+  .setFont(fontS)
+  .setText("GO HOME")
+  ;
+  
   //X +100 BUTTON
   cP5.addBang("x_100")
   .setPosition(500, 275)

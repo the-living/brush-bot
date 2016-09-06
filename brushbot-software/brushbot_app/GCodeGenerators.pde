@@ -48,24 +48,24 @@ String gcodeMotorBackward( int motor, int dist ){
   }
 }
 
-//M12-M22-M32-M42 DISABLE MOTOR
-String gcodeMotorOff( int motor ){
+//M15-M25-M35-M45 STEP MOTOR +1
+String gcodeStepForward( int motor ){
   switch( motor ){
-    case 1: return "M12"; //Motor 1
-    case 2: return "M22"; //Motor 2
-    case 3: return "M32"; //Motor 3
-    case 4: return "M42"; //Motor 4
+    case 1: return "M15"; //Motor 1
+    case 2: return "M25"; //Motor 2
+    case 3: return "M35"; //Motor 3
+    case 4: return "M45"; //Motor 4
     default: return "";
   }
 }
 
-//M13-M23-M33-M43 ENABLE MOTOR
-String gcodeMotorOn( int motor ){
+//M16-M26-M36-M46 ENABLE MOTOR
+String gcodeStepBackward( int motor ){
   switch( motor ){
-    case 1: return "M13"; //Motor 1
-    case 2: return "M23"; //Motor 2
-    case 3: return "M33"; //Motor 3
-    case 4: return "M43"; //Motor 4
+    case 1: return "M16"; //Motor 1
+    case 2: return "M26"; //Motor 2
+    case 3: return "M36"; //Motor 3
+    case 4: return "M46"; //Motor 4
     default: return "";
   }
 }
@@ -87,4 +87,8 @@ String gcodeTeleportOrigin(){
 
 String gcodeTeleportTo( float x, float y ){
   return "M100 X" + str(x) + " Y" + str(y);
+}
+
+String gcodeSpeedSetting( float s ){
+  return "D10 S" + str(s);
 }

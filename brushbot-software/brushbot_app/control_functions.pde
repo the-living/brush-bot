@@ -33,7 +33,7 @@ void controlEvent( ControlEvent theEvent ) {
     //--------------------------------------------------------------------------
     if ( theEvent.getName().equals("test_pattern") ) {
 
-      String lines[] = loadStrings("test.txt");
+      String lines[] = loadStrings("hallo.txt");
       for (int i = 0; i < lines.length; i++) {
         GB.write( lines[i] );
       }
@@ -112,7 +112,7 @@ void controlEvent( ControlEvent theEvent ) {
     // MOTOR ENABLING
     //--------------------------------------------------------------------------
     //DISENGAGE MOTOR(S)
-    if ( theEvent.getName().equals("disable") ) {
+    if ( theEvent.getName().equals("step_f") ) {
       //update motor selection array
       motors[0] = cP5.get( Toggle.class, "m1").getState();
       motors[1] = cP5.get( Toggle.class, "m2").getState();
@@ -121,14 +121,14 @@ void controlEvent( ControlEvent theEvent ) {
 
       for ( int i = 0; i < motors.length; i++ ) {
         if ( motors[i] ) {
-          String cmd = gcodeMotorOff( i + 1 );
+          String cmd = gcodeStepForward( i + 1 );
           GB.write( cmd );
         }
       }
     }
 
     //ENGAGE MOTOR(S)
-    if ( theEvent.getName().equals("enable") ) {
+    if ( theEvent.getName().equals("step_b") ) {
       //update motor selection array
       motors[0] = cP5.get( Toggle.class, "m1").getState();
       motors[1] = cP5.get( Toggle.class, "m2").getState();
@@ -137,7 +137,7 @@ void controlEvent( ControlEvent theEvent ) {
 
       for ( int i = 0; i < motors.length; i++ ) {
         if ( motors[i] ) {
-          String cmd = gcodeMotorOn( i + 1 );
+          String cmd = gcodeStepBackward( i + 1 );
           GB.write( cmd );
         }
       }
@@ -155,9 +155,32 @@ void controlEvent( ControlEvent theEvent ) {
       String cmd = gcodeSprayOff();
       GB.write( cmd );
     }
+    
+    // SPEED COMMANDS
+    //--------------------------------------------------------------------------
+    // FAST MODE
+    if ( theEvent.getName().equals("fast_mode") ) {
+      String cmd;
+      
+      if( theEvent.controller().getValue()==1 ){
+        cmd = gcodeSpeedSetting( fast_speed );
+      } else{
+        cmd = gcodeSpeedSetting( draw_speed );
+      }
+      
+      GB.write( cmd );
+    }
 
     // AXIAL MOVE COMMANDS
     //--------------------------------------------------------------------------
+    // GO HOME
+    if ( theEvent.getName().equals("go_home") ) {
+      posx = 0;
+      posy = 0;
+      String cmd = gcodeLine(posx, posy, false);
+      GB.write( cmd );
+    }
+    
     // X+100 MOVE
     if ( theEvent.getName().equals("x_100") ) {
       posx += 100;
@@ -216,4 +239,3 @@ void controlEvent( ControlEvent theEvent ) {
     }
   }
 }
-

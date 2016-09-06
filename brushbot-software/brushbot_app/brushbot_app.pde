@@ -59,7 +59,8 @@ float limit_top = 585.0; //top edge
 float limit_bottom = -585.0; //bottom edge
 float limit_right = 570.0; // right edge
 float limit_left = -570.0; // left edge
-float speed_max = 200.0; // steps/s
+float draw_speed = 400.0;
+float fast_speed = 2000.0;
 
 //plotter position
 float posx, posy;
@@ -81,7 +82,7 @@ void setup() {
 
   //SERIAL CONNECTION
   String portName = Serial.list()[0];
-  myPort = new Serial(this, portName, 57600);
+  myPort = new Serial(this, portName, 115200);
 
   //GCODE BUFFER - ArrayList for TX commands
   GB = new GCodeBuffer();

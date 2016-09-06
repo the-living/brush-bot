@@ -30,11 +30,11 @@
 //------------------------------------------------------------------------------
 //define serial communication protocol
 //serial comm bitrate
-#define BAUD          (57600)
+#define BAUD          (115200)
 //serial input buffer size
 #define MAX_BUF       (64)
 //timeout length
-#define TIMEOUT_OK    (1000)
+#define TIMEOUT_OK    (200)
 
 //define motor pins
 //based on RAMPS pinout
@@ -83,7 +83,7 @@
 #define ARC_CCW     (-1)
 //arcs are constructed by subdivision into line segments
 //define length of segment for subdivision (in mm)
-#define MM_PER_SEGMENT  (1.0)
+#define MM_PER_SEGMENT  (50.0)
 
 //------------------------------------------------------------------------------
 // VARIABLES
@@ -114,10 +114,10 @@ static Servo s1;
 // (normally, this is located in the center of the drawing)
 // measurement is in millimeters
 
-static float limit_top = 1170.0; //distance to top motor axle centers
-static float limit_bottom = -1170.0; //distance to bottom motor axle centers
-static float limit_right = 1957.5; //distance to right motor axle centers
-static float limit_left = -1957.5; //distance to left motor axle centers
+static float limit_top = 1099.0; //distance to top motor axle centers
+static float limit_bottom = -1099.0; //distance to bottom motor axle centers
+static float limit_right = 2054.0; //distance to right motor axle centers
+static float limit_left = -2054.0; //distance to left motor axle centers
 
 // margin dimensions
 // safe area inset from plotter extents
@@ -249,7 +249,7 @@ static long getSpoolSteps(float d_L) {
   //Serial.println( N * dir );
   //Serial.print("DIAM: ");
   //Serial.println( 2*N*dir*t + Do );
-  return floor(0.0016*d_L*d_L + 22.049*d_L);
+  return floor(0.0015*d_L*d_L + 22.623*d_L);
 }
 
 
@@ -600,7 +600,7 @@ static void processCommand() {
       }
 
     case 5: { //update spool diameters
-        adjustSpoolDiameter(parsenumber( 'S', SPOOL_DIAMETER1 ),
+        adjustSpoolDiameter( parsenumber( 'S', SPOOL_DIAMETER1 ),
                             parsenumber( 'S', SPOOL_DIAMETER2 ),
                             parsenumber( 'S', SPOOL_DIAMETER3 ),
                             parsenumber( 'S', SPOOL_DIAMETER4 )
@@ -657,6 +657,8 @@ static void processCommand() {
       }
     case 12: m1.disableOutputs(); break; //disengage M1 stepper
     case 13: m1.enableOutputs(); break; //engage M1 stepper
+    case 15: m1.move(1); m1.runToPosition(); break; //move M1 step to prevent hold "whining"
+    case 16: m1.move(-1); m1.runToPosition(); break; //move M1 step to prevent hold "whining"
 
     case 20: {
         m2.move(jog_dist * parsenumber( 'S', 1 )); m2.runToPosition(); break; //jog M2 stepper forward
@@ -666,6 +668,8 @@ static void processCommand() {
       }
     case 22: m2.disableOutputs(); break; //disengage M2 stepper
     case 23: m2.enableOutputs(); break; //engage M2 stepper
+    case 25: m2.move(1); m2.runToPosition(); break; //move M2 step to prevent hold "whining"
+    case 26: m2.move(-1); m2.runToPosition(); break; //move M2 step to prevent hold "whining"
 
     case 30: {
         m3.move(jog_dist * parsenumber( 'S', 1 )); m3.runToPosition(); break; //jog M3 stepper forward
@@ -675,6 +679,8 @@ static void processCommand() {
       }
     case 32: m3.disableOutputs(); break; //disengage M3 stepper
     case 33: m3.enableOutputs(); break; //engage M3 stepper
+    case 35: m3.move(1); m3.runToPosition(); break; //move M3 step to prevent hold "whining"
+    case 36: m3.move(-1); m3.runToPosition(); break; //move M3 step to prevent hold "whining"
 
     case 40: {
         m4.move(jog_dist * parsenumber( 'S', 1 )); m4.runToPosition(); break; //jog M4 stepper forward
@@ -684,6 +690,8 @@ static void processCommand() {
       }
     case 42: m4.disableOutputs(); break; //disengage M4 stepper
     case 43: m4.enableOutputs(); break; //engage M4 stepper
+    case 45: m4.move(1); m4.runToPosition(); break; //move M4 step to prevent hold "whining"
+    case 46: m4.move(-1); m4.runToPosition(); break; //move M4 step to prevent hold "whining"
 
     case 50: s1.write( PEN_DOWN_ANGLE ); break; //engage sprayer servo
     case 51: s1.write( PEN_UP_ANGLE ); break; //disengage sprayer servo
@@ -850,6 +858,8 @@ void setup() {
   Serial.println( SPOOL_DIAMETER4 );
 
   initIK();
+  Serial.print( "Init String: " );
+  Serial.println( initStringLength );
   
   positionReport();
   
